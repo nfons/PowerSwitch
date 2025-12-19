@@ -5,6 +5,8 @@ const port : number= Number.parseInt(process.env.PORT ?? '', 10) || 8080;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
+  app.setGlobalPrefix('api');
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
 }

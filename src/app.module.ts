@@ -8,8 +8,9 @@ import { DataSource } from 'typeorm';
 import {PutlityService} from "./entities/putility/putlity.service";
 import {UtilityConfig} from "./entities/config/utlityConfig.entity";
 import {UtilityConfigModule} from "./entities/config/utlityconfig.module";
-import { ScheduleModule } from '@nestjs/schedule';
-import {TasksService} from "./task.service";
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -17,12 +18,14 @@ import {TasksService} from "./task.service";
       database: 'powerswitch.db',
       entities: [PUtility, UtilityConfig],
       synchronize: true, // I think this is not prod-friendly...but will tackle that later
-      logging: true,
+      logging: false,
     }),
-    ScheduleModule.forRoot(), PutlityModule, UtilityConfigModule
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'frontend', 'build'),
+    }), PutlityModule, UtilityConfigModule
   ],
   controllers: [AppController],
-  providers: [AppService, TasksService],
+  providers: [AppService],
 })
 export class AppModule {
   constructor(private  dataSource: DataSource) {}
