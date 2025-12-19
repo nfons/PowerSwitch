@@ -7,11 +7,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PUtility } from '../src/entities/putility/putility.entity';
 import { UtilityConfig } from '../src/entities/config/utlityConfig.entity';
 import { PutlityService } from '../src/entities/putility/putlity.service';
+import { UtilityConfigService } from '../src/entities/config/utilityConfig.service';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
   let putlityService: PutlityService;
+  let utilityConfigService: UtilityConfigService;
   let seededUtilities: PUtility[] = [];
+  let seededConfigs: UtilityConfig[] = [];
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -32,12 +35,22 @@ describe('AppController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     putlityService = moduleFixture.get(PutlityService);
+    utilityConfigService = moduleFixture.get(UtilityConfigService);
     await app.init();
 
     seededUtilities = [];
-    for (const name of ['alpha', 'beta', "omega"]) {
+    for (const name of ['alpha', 'beta', 'omega']) {
       const entity = Object.assign(new PUtility(), { name, rate: 0.15, type: 'electricity' });
       seededUtilities.push(await putlityService.add(entity));
+    }
+
+    seededConfigs = [];
+    for (const region of ['north', 'south']) {
+      const config = Object.assign(new UtilityConfig(), {
+        fields: { region },
+        nextrun: new Date(),
+      });
+      seededConfigs.push(await utilityConfigService.add(config));
     }
   });
 
@@ -51,19 +64,59 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer()).get('/health').expect(200).expect('200 Healthy');
   });
 
-  it('/putlity (GET) should return all records', async () => {
-    const res = await request(app.getHttpServer())
-      .get('/putlity')
-      .expect(200);
-    const names = res.body.map((item: any) => item.name).sort();
-    expect(names).toEqual(['alpha', 'beta']);
+  describe('putility tests', ()=>{
+    it('/putlity (GET) should return all records', async () => {
+      const res = await request(app.getHttpServer())
+          .get('/putlity')
+          .expect(200);
+      const names = res.body.map((item: any) => item.name).sort();
+      expect(names).toEqual(['alpha', 'beta', 'omega']);
+    });
+
+    it('/putlity/:id (GET) should return the requested record', async () => {
+      const target = seededUtilities[0];
+      const res = await request(app.getHttpServer())
+          .get(`/putlity/${target.id}`)
+          .expect(200);
+      expect(res.body).toMatchObject({ id: target.id, name: target.name });
+    });
+
+    it('/putility (PUT) should create a new record', async () => {
+      const putlity = { name: 'gamma', rate: 0.1, type: 'gas' };
+      const res = await request(app.getHttpServer()).put('/putlity').send(putlity).expect(200);
+      expect(res.text).toBe('Utility Record Created');
+    })
+
   });
 
-  it('/putlity/:id (GET) should return the requested record', async () => {
-    const target = seededUtilities[0];
-    const res = await request(app.getHttpServer())
-      .get(`/putlity/${target.id}`)
-      .expect(200);
-    expect(res.body).toMatchObject({ id: target.id, name: target.name });
-  });
+  describe('utilityConfig tests', ()=>{
+
+    it('/config (GET) should return seeded configs', async () => {
+      const res = await request(app.getHttpServer())
+          .get('/config')
+          .expect(200);
+      const regions = res.body.map((item: any) => item.fields.region).sort();
+      expect(regions).toEqual(['north', 'south']);
+    });
+
+    it('/config/:id (GET) should return the requested config', async () => {
+      const target = seededConfigs[0];
+      const res = await request(app.getHttpServer())
+          .get(`/config/${target.id}`)
+          .expect(200);
+      expect(res.body).toMatchObject({ id: target.id, fields: target.fields });
+    });
+
+    it('/config (PUT) should create a new config entry', async () => {
+      const dto = { fields: { region: 'east' }, nextrun: new Date().toISOString() };
+      const res = await request(app.getHttpServer())
+          .put('/config')
+          .send(dto)
+          .expect(200);
+      expect(res.body.id).toBeDefined();
+      expect(res.body.fields.region).toBe('east');
+      const persisted = await utilityConfigService.findOne(res.body.id);
+      expect(persisted).not.toBeNull();
+    });
+  })
 });
