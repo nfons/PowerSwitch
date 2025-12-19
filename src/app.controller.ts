@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, Post, Delete } from '@nestjs/common';
+import { Controller, Get, Put, Body, Post, Delete, Param, ParseIntPipe } from '@nestjs/common';
 import { AppService } from './app.service';
 import {CreatePUtilityDto, UpdatePUtilityDto} from "./dto/putility.dto";
 import {PutlityService} from "./entities/putility/putlity.service";
@@ -12,7 +12,7 @@ export class AppController {
               private  readonly utilityService: UtilityConfigService) {
 
   }
-  å
+
   @Get(['/health', '/'] )
   health(): string {
     return '200 Healthy';
@@ -32,6 +32,26 @@ export class AppController {
     return 'Adds Utlity Record';
   }
 
+  @Get('/putlity')
+  async getAllPutlity(): Promise<PUtility[]> {
+    try {
+      return await this.putlityService.findAll();
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  @Get('/putlity/:id')
+  async getPutlityById(@Param('id', ParseIntPipe) id: number): Promise<PUtility | null> {
+    try {
+      return await this.putlityService.findOne(id);
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
   @Put('/config')
   async createConfig(){
     return 'Adds Config Record';
@@ -40,7 +60,7 @@ export class AppController {
   @Get('/config')
   async getConfig(){
     try {
-      this.utilityService.findAll();
+      return await this.utilityService.findAll();
     } catch (e) {
       console.log(e);
     }
