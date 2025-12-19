@@ -15,7 +15,7 @@ export class AppController {
 
   }
 
-  @Get(['/health', '/'] )
+  @Get('/health')
   health(): string {
     return '200 Healthy';
   }
