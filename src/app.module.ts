@@ -7,7 +7,7 @@ import {PutlityModule} from './entities/putility/putlityModule';
 import { DataSource } from 'typeorm';
 import {PutlityService} from "./entities/putility/putlity.service";
 import {UtilityConfig} from "./entities/config/utlityConfig.entity";
-import {UtilityConfigService} from "./entities/config/utilityConfig.service";
+import {UtilityConfigModule} from "./entities/config/utlityconfig.module";
 
 @Module({
   imports: [
@@ -17,10 +17,10 @@ import {UtilityConfigService} from "./entities/config/utilityConfig.service";
       entities: [PUtility, UtilityConfig],
       synchronize: true, // I think this is not prod-friendly...but will tackle that later
       logging: true,
-    }), PutlityModule
+    }), PutlityModule, UtilityConfigModule
   ],
   controllers: [AppController],
-  providers: [AppService, UtilityConfigService],
+  providers: [AppService],
 })
 export class AppModule {
   constructor(private  dataSource: DataSource) {}

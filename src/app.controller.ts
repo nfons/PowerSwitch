@@ -12,29 +12,19 @@ export class AppController {
               private  readonly utilityService: UtilityConfigService) {
 
   }
-
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
-  }
-
-  @Get('/health')
+  å
+  @Get(['/health', '/'] )
   health(): string {
     return '200 Healthy';
   }
 
   @Put('/putlity')
   async createPutlity(@Body() createPutlityDto: CreatePUtilityDto){
-    let putlity = new PUtility()
-    putlity.name = createPutlityDto.name;
-    putlity.rate = createPutlityDto.rate;
-    putlity.type = createPutlityDto.type;
     try {
-      this.putlityService.add(putlity)
+      return this.appService.createUtility(createPutlityDto);
     } catch (e) {
       console.log(e);
     }
-    return 'Adds Utlity Record';
   }
 
   @Post('/putlity')

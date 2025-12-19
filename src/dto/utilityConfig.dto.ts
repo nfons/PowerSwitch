@@ -1,6 +1,6 @@
 export class CreateUtilityConfigDto {
   nextrun?: Date;
-  fields: any;
+  fields?: any;
 }
 
 export class UpdateUtilityConfigDto {
