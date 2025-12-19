@@ -7,7 +7,7 @@ import {PutlityService} from "./entities/putility/putlity.service";
 export class AppService {
   constructor(private readonly putilityservice: PutlityService) {}
 
-  getUtilities(): PUtility[] {
+  getUtilities() {
    try {
      return this.putilityservice.findAll();
    } catch (e) {

@@ -8,7 +8,8 @@ import { DataSource } from 'typeorm';
 import {PutlityService} from "./entities/putility/putlity.service";
 import {UtilityConfig} from "./entities/config/utlityConfig.entity";
 import {UtilityConfigModule} from "./entities/config/utlityconfig.module";
-
+import { ScheduleModule } from '@nestjs/schedule';
+import {TasksService} from "./task.service";
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -17,10 +18,11 @@ import {UtilityConfigModule} from "./entities/config/utlityconfig.module";
       entities: [PUtility, UtilityConfig],
       synchronize: true, // I think this is not prod-friendly...but will tackle that later
       logging: true,
-    }), PutlityModule, UtilityConfigModule
+    }),
+    ScheduleModule.forRoot(), PutlityModule, UtilityConfigModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, TasksService],
 })
 export class AppModule {
   constructor(private  dataSource: DataSource) {}
