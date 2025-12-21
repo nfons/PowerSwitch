@@ -1,14 +1,14 @@
 FROM node:20-slim AS base
-RUN corepack enable
 WORKDIR /app
 
 ## Install production dependencies for both frontend and backend
 FROM base AS prod-deps
 COPY frontend/package.json ./frontend/
+COPY frontend/package-lock.json ./frontend/
 COPY package.json ./
 COPY package-lock.json ./
-RUN npm install --prod --frozen-lockfile
-RUN npm --prefix ./frontend install --prod --frozen-lockfile
+RUN npm ci
+RUN npm --prefix ./frontend ci
 
 # Build frontend assets
 FROM prod-deps AS build-frontend
@@ -23,11 +23,14 @@ COPY tsconfig.json ./
 COPY tsconfig.build.json ./
 COPY nest-cli.json ./
 COPY src ./src
-RUN npm install --only=dev
+COPY package.json ./
+RUN npm install
 RUN npm run build
 
 FROM base
 COPY --from=build-svc /app/dist /app/dist
 COPY --from=build-frontend /app/frontend/build /app/frontend/build
+COPY package.json ./
+RUN npm install --only=production
 EXPOSE 8000
-CMD [ "npm", "start:prod" ]
+CMD [ "node", "dist/main" ]
