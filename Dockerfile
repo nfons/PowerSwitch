@@ -1,19 +1,36 @@
 FROM node:20-slim AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
-COPY . /app
 WORKDIR /app
 
+## Install production dependencies for both frontend and backend
 FROM base AS prod-deps
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+COPY frontend/package.json ./frontend/
+COPY frontend/package-lock.json ./frontend/
+COPY package.json ./
+COPY package-lock.json ./
+RUN npm ci
+RUN npm --prefix ./frontend ci
 
-FROM base AS build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN pnpm run build
+# Build frontend assets
+FROM prod-deps AS build-frontend
+COPY --from=prod-deps /app/frontend/node_modules ./frontend/node_modules
+COPY frontend/public ./frontend/public
+COPY frontend/src ./frontend/src
+RUN npm --prefix ./frontend run build
+
+
+FROM prod-deps AS build-svc
+COPY tsconfig.json ./
+COPY tsconfig.build.json ./
+COPY nest-cli.json ./
+COPY src ./src
+COPY package.json ./
+RUN npm install
+RUN npm run build
 
 FROM base
-COPY --from=prod-deps /app/node_modules /app/node_modules
-COPY --from=build /app/dist /app/dist
+COPY --from=build-svc /app/dist /app/dist
+COPY --from=build-frontend /app/frontend/build /app/frontend/build
+COPY package.json ./
+RUN npm install --only=production
 EXPOSE 8000
-CMD [ "pnpm", "start:prod" ]
+CMD [ "node", "dist/main" ]
