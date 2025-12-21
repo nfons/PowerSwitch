@@ -30,4 +30,4 @@ FROM base
 COPY --from=build-svc /app/dist /app/dist
 COPY --from=build-frontend /app/frontend/build /app/frontend/build
 EXPOSE 8000
-# CMD [ "npm", "start:prod" ]
+CMD [ "npm", "start:prod" ]
