@@ -18,6 +18,6 @@ export class CurrentUtility {
   @Column()
   type: string;
 
-  @Column('simple-json')
+  @Column('simple-json', { nullable: true })
   fields: any;
 }
