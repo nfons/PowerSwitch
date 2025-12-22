@@ -111,16 +111,20 @@ function App() {
             </select>
           </label>
           <label>
-            Rate {form.type === 'Gas' ? '(ccf)' : '(kWh)'}
-            <input
-              type="number"
-              min="0"
-              step="0.00001"
-              value={form.rate}
-              onChange={handleChange('rate')}
-              disabled={isSubmitting}
-              required
-            />
+            Rate per {form.type === 'Gas' ? '(ccf)' : '(kWh)'}
+            <div className="input-with-prefix">
+              <span className="input-prefix">$</span>
+              <input
+                type="number"
+                min="0"
+                step="0.00001"
+                value={form.rate}
+                onChange={handleChange('rate')}
+                disabled={isSubmitting}
+                required
+                className="input-with-prefix-field"
+              />
+            </div>
           </label>
           <label>
             Duration (how long is this rate good for)

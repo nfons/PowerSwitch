@@ -117,6 +117,26 @@ textarea {
   min-height: 60px;
 }
 
+.input-with-prefix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-prefix {
+  position: absolute;
+  left: 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #667eea;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.input-with-prefix-field {
+  padding-left: 32px !important;
+}
+
 button[type="submit"] {
   margin-top: 8px;
   padding: 14px 24px;
