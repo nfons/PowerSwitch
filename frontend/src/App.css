@@ -1,12 +1,17 @@
 .App {
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  padding: 40px 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
 }
 
 .form-card {
@@ -14,8 +19,6 @@
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   padding: 40px;
-  max-width: 480px;
-  width: 100%;
   animation: slideUp 0.4s ease-out;
 }
 
@@ -69,6 +72,71 @@ label {
   font-weight: 600;
   color: #2d3748;
   text-align: left;
+}
+
+.type-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.type-selection > label {
+  margin: 0;
+}
+
+.type-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.type-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3748;
+  font-family: inherit;
+}
+
+.type-button:hover:not(:disabled) {
+  border-color: #667eea;
+  background-color: #f7fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.type-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.type-button.active {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.type-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.type-icon {
+  font-size: 24px;
+}
+
+.type-button.active .type-icon {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 input,
@@ -197,12 +265,153 @@ button[type="submit"]:disabled {
   border: 1px solid #fecaca;
 }
 
+.configs-section {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 40px;
+  animation: slideUp 0.4s ease-out 0.1s backwards;
+}
+
+.configs-section h2 {
+  margin: 0 0 24px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a202c;
+  text-align: center;
+}
+
+.loading,
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #718096;
+  font-size: 16px;
+}
+
+.empty-state {
+  background: #f7fafc;
+  border-radius: 12px;
+  border: 2px dashed #e2e8f0;
+}
+
+.configs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.config-card {
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  border-radius: 12px;
+  padding: 20px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.config-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+  border-color: #667eea;
+}
+
+.config-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.config-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.config-type {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.config-type.gas {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.config-type.electricity {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.config-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.config-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.config-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #718096;
+  flex-shrink: 0;
+}
+
+.config-value {
+  font-size: 14px;
+  color: #2d3748;
+  text-align: right;
+}
+
+.config-value.rate {
+  font-size: 20px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.config-json {
+  background: #1a202c;
+  color: #a0aec0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin: 4px 0 0 0;
+  overflow-x: auto;
+  width: 100%;
+  font-family: 'Courier New', monospace;
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    gap: 20px;
+  }
+
+  .configs-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 600px) {
-  .form-card {
+  .form-card,
+  .configs-section {
     padding: 28px 24px;
   }
 
-  .form-card h1 {
+  .form-card h1,
+  .configs-section h2 {
     font-size: 24px;
   }
 }

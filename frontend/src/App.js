@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFireFlameSimple, faBoltLightning } from '@fortawesome/free-solid-svg-icons';
 import './App.css';
 
 const initialFormState = {
   name: '',
-  type: '',
+  type: 'Gas',
   rate: '',
   duration: '',
 };
@@ -12,6 +14,8 @@ function App() {
   const [form, setForm] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [configs, setConfigs] = useState([]);
+  const [loadingConfigs, setLoadingConfigs] = useState(true);
 
   const handleChange = (field) => (event) => {
     setForm((prev) => ({
@@ -20,8 +24,36 @@ function App() {
     }));
   };
 
+  const handleTypeSelect = (type) => {
+    setForm((prev) => ({
+      ...prev,
+      type: type,
+    }));
+  };
+
   const canSubmit = form.name.trim() && form.type.trim() && form.rate !== '';
   const isSubmitting = status === 'loading';
+
+  // Calls the fetch config endpoint to get all saved configs.
+  const fetchConfigs = async () => {
+    try {
+      setLoadingConfigs(true);
+      const response = await fetch('/api/config');
+      if (!response.ok) {
+        throw new Error('Failed to fetch configs');
+      }
+      const data = await response.json();
+      setConfigs(data);
+    } catch (error) {
+      console.error('Error fetching configs:', error);
+    } finally {
+      setLoadingConfigs(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchConfigs();
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault(); //blcok basic js
@@ -73,6 +105,7 @@ function App() {
 
       setStatus('success');
       setForm(initialFormState);
+      fetchConfigs(); // Reload configs after successful save
     } catch (error) {
       setStatus('error');
       setErrorMessage(
@@ -84,9 +117,10 @@ function App() {
 
   return (
     <main className="App">
-      <section className="form-card">
-        <h1>Create Current Utility</h1>
-        <form onSubmit={handleSubmit}>
+      <div className="app-container">
+        <section className="form-card">
+          <h1>Add Current Utility</h1>
+          <form onSubmit={handleSubmit}>
           <label>
             Current Utility Name
             <input
@@ -97,19 +131,29 @@ function App() {
               required
             />
           </label>
-          <label>
-            Utility Type
-            <select
-              value={form.type}
-              onChange={handleChange('type')}
-              disabled={isSubmitting}
-              required
-            >
-              <option value="">Select a type...</option>
-              <option value="Gas">Gas</option>
-              <option value="Electricity">Electricity</option>
-            </select>
-          </label>
+          <div className="type-selection">
+            <label>Utility Type</label>
+            <div className="type-buttons">
+              <button
+                type="button"
+                className={`type-button ${form.type === 'Gas' ? 'active' : ''}`}
+                onClick={() => handleTypeSelect('Gas')}
+                disabled={isSubmitting}
+              >
+                <FontAwesomeIcon icon={faFireFlameSimple} className="type-icon" />
+                <span>Gas</span>
+              </button>
+              <button
+                type="button"
+                className={`type-button ${form.type === 'Electricity' ? 'active' : ''}`}
+                onClick={() => handleTypeSelect('Electricity')}
+                disabled={isSubmitting}
+              >
+                <FontAwesomeIcon icon={faBoltLightning} className="type-icon" />
+                <span>Electricity</span>
+              </button>
+            </div>
+          </div>
           <label>
             Rate per {form.type === 'Gas' ? '(ccf)' : '(kWh)'}
             <div className="input-with-prefix">
@@ -139,13 +183,56 @@ function App() {
             {isSubmitting ? 'Saving…' : 'Save Current Utility Record'}
           </button>
         </form>
-        {status === 'success' && <p className="status success">Current Rate stored successfully.</p>}
-        {status === 'error' && (
-          <p className="status error">
-            {errorMessage || 'Unable to save Current Rate; check console for more details.'}
-          </p>
-        )}
-      </section>
+          {status === 'success' && <p className="status success">Current Rate stored successfully.</p>}
+          {status === 'error' && (
+            <p className="status error">
+              {errorMessage || 'Unable to save Current Rate; check console for more details.'}
+            </p>
+          )}
+        </section>
+
+        <section className="configs-section">
+          <h2>Saved Utility Configurations</h2>
+          {loadingConfigs ? (
+            <div className="loading">Loading configurations...</div>
+          ) : configs.length === 0 ? (
+            <div className="empty-state">No configurations saved yet. Create your first one above!</div>
+          ) : (
+            <div className="configs-grid">
+              {configs.map((config) => (
+                <div key={config.id} className="config-card">
+                  <div className="config-header">
+                    <h3>{config.name}</h3>
+                    <span className={`config-type ${config.type?.toLowerCase()}`}>
+                      {config.type}
+                    </span>
+                  </div>
+                  <div className="config-details">
+                    <div className="config-row">
+                      <span className="config-label">Rate:</span>
+                      <span className="config-value rate">${Number(config.rate).toFixed(5)}</span>
+                    </div>
+                    {config.duration && (
+                      <div className="config-row">
+                        <span className="config-label">Valid Until:</span>
+                        <span className="config-value">
+                          {new Date(config.duration).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {config.fields && Object.keys(config.fields).length > 0 && (
+                      <div className="config-row">
+                        <span className="config-label">Additional Fields:</span>
+                        <pre className="config-json">{JSON.stringify(config.fields, null, 2)}</pre>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </main>
   );
 }
