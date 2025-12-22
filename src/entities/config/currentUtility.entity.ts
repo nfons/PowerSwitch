@@ -12,7 +12,7 @@ export class CurrentUtility {
   @Column({ type: 'datetime', nullable: true })
   duration: Date;
 å
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('decimal', { precision: 10, scale: 5 })
   rate: number;
 
   @Column()
