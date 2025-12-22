@@ -19,10 +19,10 @@ export class PUtility {
   @Column()
   type: string;
 
-  @Column()
+  @Column({ nullable: true})
   url: string;
 
   // Number of months this is valid for
-  @Column()
+  @Column({ nullable: true})
   rateLength: number;
 }
