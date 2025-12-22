@@ -14,17 +14,21 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'better-sqlite3',
-      database: 'powerswitch.db',
-      entities: [PUtility, CurrentUtility],
-      synchronize: true, // I think this is not prod-friendly...but will tackle that later
-      logging: false,
+    ConfigModule.forRoot( { isGlobal: true }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        type: 'better-sqlite3',
+        database: configService.get<string>('DB_TABLE') || 'powerswitch.db',
+        entities: [PUtility, CurrentUtility],
+        synchronize: true,
+        logging: false,
+      }),
+      inject: [ConfigService],
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'frontend', 'build'),
-    }),
-    ConfigModule.forRoot( { isGlobal: true }), PutlityModule, CurrentUtilityModule
+    }), PutlityModule, CurrentUtilityModule
   ],
   controllers: [AppController],
   providers: [AppService],

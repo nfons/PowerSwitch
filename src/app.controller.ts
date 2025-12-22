@@ -26,7 +26,7 @@ export class AppController {
     try {
       return this.appService.createUtility(createPutlityDto);
     } catch (e) {
-      consol.error(e);
+      console.error(e);
     }
   }
 
