@@ -6,8 +6,8 @@ import { PUtility } from './entities/putility/putility.entity';
 import {PutlityModule} from './entities/putility/putlityModule';
 import { DataSource } from 'typeorm';
 import {PutlityService} from "./entities/putility/putlity.service";
-import {CurrentUtility} from "./entities/config/currentUtility.entity";
-import {CurrentUtilityModule} from "./entities/config/currentUtility.module";
+import {CurrentUtility} from "./entities/current_utility/currentUtility.entity";
+import {CurrentUtilityModule} from "./entities/current_utility/currentUtility.module";
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
