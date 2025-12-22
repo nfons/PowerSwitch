@@ -12,20 +12,23 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+
+const dbConfig = TypeOrmModule.forRootAsync({
+    imports: [ConfigModule],
+    useFactory: async (configService: ConfigService) => ({
+      type: 'better-sqlite3',
+      database: configService.get<string>('DB_TABLE') || 'powerswitch.db',
+      entities: [PUtility, CurrentUtility],
+      synchronize: true,
+      logging: false,
+    }),
+    inject: [ConfigService],
+  });
+
 @Module({
   imports: [
+    dbConfig,
     ConfigModule.forRoot( { isGlobal: true }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        type: 'better-sqlite3',
-        database: configService.get<string>('DB_TABLE') || 'powerswitch.db',
-        entities: [PUtility, CurrentUtility],
-        synchronize: true,
-        logging: false,
-      }),
-      inject: [ConfigService],
-    }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'frontend', 'build'),
     }), PutlityModule, CurrentUtilityModule
