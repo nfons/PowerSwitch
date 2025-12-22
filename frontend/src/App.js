@@ -57,7 +57,7 @@ function App() {
       }
 
       // Its hard coded for now...but i might have to change this later to be env based or something
-      const response = await fetch('http://localhost:8080/api/config', {
+      const response = await fetch('/api/config', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
