@@ -3,8 +3,8 @@ import { AppService } from './app.service';
 import {CreatePUtilityDto, UpdatePUtilityDto} from "./dto/putility.dto";
 import {PutlityService} from "./entities/putility/putlity.service";
 import {PUtility} from "./entities/putility/putility.entity";
-import {CurrentUtilityService} from "./entities/config/current-utility.service";
-import { CurrentUtility } from './entities/config/currentUtility.entity';
+import {CurrentUtilityService} from "./entities/current_utility/current-utility.service";
+import { CurrentUtility } from './entities/current_utility/currentUtility.entity';
 import { CreateCurrentUtilityDto } from './dto/currentUtility.dto';
 
 @Controller()
