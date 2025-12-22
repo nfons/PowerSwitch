@@ -46,10 +46,12 @@ jobs:
           node-version: 20
           cache: 'npm'
       - name: Install dependencies
+        working-directory: ./frontend
         run: npm ci
         env:
           CI: true
       - name: Run unit tests for client
+        working-directory: ./frontend
         run: npm test
         env:
           CI: true
