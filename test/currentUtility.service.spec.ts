@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CurrentUtilityService } from '../src/entities/config/current-utility.service';
-import { CurrentUtility } from '../src/entities/config/currentUtility.entity';
+import { CurrentUtilityService } from '../src/entities/current_utility/current-utility.service';
+import { CurrentUtility } from '../src/entities/current_utility/currentUtility.entity';
 
 describe('CurrentUtilityService', () => {
   let service: CurrentUtilityService;

@@ -5,9 +5,9 @@ import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PUtility } from '../src/entities/putility/putility.entity';
-import { CurrentUtility } from '../src/entities/config/currentUtility.entity';
+import { CurrentUtility } from '../src/entities/current_utility/currentUtility.entity';
 import { PutlityService } from '../src/entities/putility/putlity.service';
-import { CurrentUtilityService } from '../src/entities/config/current-utility.service';
+import { CurrentUtilityService } from '../src/entities/current_utility/current-utility.service';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
