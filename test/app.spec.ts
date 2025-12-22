@@ -5,16 +5,16 @@ import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PUtility } from '../src/entities/putility/putility.entity';
-import { UtilityConfig } from '../src/entities/config/utlityConfig.entity';
+import { CurrentUtility } from '../src/entities/config/currentUtility.entity';
 import { PutlityService } from '../src/entities/putility/putlity.service';
-import { UtilityConfigService } from '../src/entities/config/utilityConfig.service';
+import { CurrentUtilityService } from '../src/entities/config/current-utility.service';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
   let putlityService: PutlityService;
-  let utilityConfigService: UtilityConfigService;
+  let utilityConfigService: CurrentUtilityService;
   let seededUtilities: PUtility[] = [];
-  let seededConfigs: UtilityConfig[] = [];
+  let seededConfigs: CurrentUtility[] = [];
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -22,7 +22,7 @@ describe('AppController (e2e)', () => {
         TypeOrmModule.forRoot({
           type: 'better-sqlite3',
           database: ':memory:',
-          entities: [PUtility, UtilityConfig],
+          entities: [PUtility, CurrentUtility],
           synchronize: true,
           dropSchema: true,
         }),
@@ -35,7 +35,7 @@ describe('AppController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     putlityService = moduleFixture.get(PutlityService);
-    utilityConfigService = moduleFixture.get(UtilityConfigService);
+    utilityConfigService = moduleFixture.get(CurrentUtilityService);
     await app.init();
 
     seededUtilities = [];
@@ -46,9 +46,10 @@ describe('AppController (e2e)', () => {
 
     seededConfigs = [];
     for (const region of ['north', 'south']) {
-      const config = Object.assign(new UtilityConfig(), {
+      const config = Object.assign(new CurrentUtility(), {
         fields: { region },
         nextrun: new Date(),
+        rate: 0.12,
       });
       seededConfigs.push(await utilityConfigService.add(config));
     }

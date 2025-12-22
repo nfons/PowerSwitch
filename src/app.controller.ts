@@ -3,15 +3,15 @@ import { AppService } from './app.service';
 import {CreatePUtilityDto, UpdatePUtilityDto} from "./dto/putility.dto";
 import {PutlityService} from "./entities/putility/putlity.service";
 import {PUtility} from "./entities/putility/putility.entity";
-import {UtilityConfigService} from "./entities/config/utilityConfig.service";
-import { UtilityConfig } from './entities/config/utlityConfig.entity';
-import { CreateUtilityConfigDto } from './dto/utilityConfig.dto';
+import {CurrentUtilityService} from "./entities/config/current-utility.service";
+import { CurrentUtility } from './entities/config/currentUtility.entity';
+import { CreateCurrentUtilityDto } from './dto/currentUtility.dto';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService,
               private readonly putlityService: PutlityService,
-              private  readonly utilityService: UtilityConfigService) {
+              private  readonly utilityService: CurrentUtilityService) {
 
   }
 
@@ -64,7 +64,7 @@ export class AppController {
   }
 
   @Get('/config/:id')
-  async getConfigById(@Param('id', ParseIntPipe) id: number): Promise<UtilityConfig | null> {
+  async getConfigById(@Param('id', ParseIntPipe) id: number): Promise<CurrentUtility | null> {
     try {
       return await this.utilityService.findOne(id);
     } catch (e) {
@@ -74,9 +74,9 @@ export class AppController {
   }
 
   @Put('/config')
-  async createConfig(@Body() createUtilityConfigDto: CreateUtilityConfigDto): Promise<UtilityConfig> {
+  async createConfig(@Body() createCurrentUtilityDto: CreateCurrentUtilityDto): Promise<CurrentUtility> {
     try {
-      const payload = Object.assign(new UtilityConfig(), createUtilityConfigDto);
+      const payload = Object.assign(new CurrentUtility(), createCurrentUtilityDto);
       return await this.utilityService.add(payload);
     } catch (e) {
       console.log(e);
