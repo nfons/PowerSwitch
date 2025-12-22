@@ -6,13 +6,14 @@ import {PUtility} from "./entities/putility/putility.entity";
 import {CurrentUtilityService} from "./entities/current_utility/current-utility.service";
 import { CurrentUtility } from './entities/current_utility/currentUtility.entity';
 import { CreateCurrentUtilityDto } from './dto/currentUtility.dto';
+import { ConfigService} from '@nestjs/config'
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService,
               private readonly putlityService: PutlityService,
-              private  readonly utilityService: CurrentUtilityService) {
-
+              private  readonly utilityService: CurrentUtilityService,
+              private readonly configService: ConfigService) {
   }
 
   @Get('/health')
@@ -25,7 +26,7 @@ export class AppController {
     try {
       return this.appService.createUtility(createPutlityDto);
     } catch (e) {
-      console.log(e);
+      consol.error(e);
     }
   }
 
@@ -39,7 +40,7 @@ export class AppController {
     try {
       return await this.putlityService.findAll();
     } catch (e) {
-      console.log(e);
+      console.error(e);
       throw e;
     }
   }
@@ -49,7 +50,7 @@ export class AppController {
     try {
       return await this.putlityService.findOne(id);
     } catch (e) {
-      console.log(e);
+      console.error(e);
       throw e;
     }
   }
@@ -59,7 +60,7 @@ export class AppController {
     try {
       return await this.utilityService.findAll();
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   }
 
@@ -68,7 +69,7 @@ export class AppController {
     try {
       return await this.utilityService.findOne(id);
     } catch (e) {
-      console.log(e);
+      console.error(e);
       throw e;
     }
   }
@@ -79,7 +80,7 @@ export class AppController {
       const payload = Object.assign(new CurrentUtility(), createCurrentUtilityDto);
       return await this.utilityService.add(payload);
     } catch (e) {
-      console.log(e);
+      console.error(e);
       throw e;
     }
   }

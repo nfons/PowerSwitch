@@ -10,6 +10,7 @@ import {CurrentUtility} from "./entities/current_utility/currentUtility.entity";
 import {CurrentUtilityModule} from "./entities/current_utility/currentUtility.module";
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { join } from 'path';
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'frontend', 'build'),
-    }), PutlityModule, CurrentUtilityModule
+    }),
+    ConfigModule.forRoot( { isGlobal: true }), PutlityModule, CurrentUtilityModule
   ],
   controllers: [AppController],
   providers: [AppService],
