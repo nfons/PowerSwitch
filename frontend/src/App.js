@@ -192,7 +192,7 @@ function App() {
         </section>
 
         <section className="configs-section">
-          <h2>Saved Utility Configurations</h2>
+          <h2>Current Utility Rates</h2>
           {loadingConfigs ? (
             <div className="loading">Loading configurations...</div>
           ) : configs.length === 0 ? (
