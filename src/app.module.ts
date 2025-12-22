@@ -11,7 +11,8 @@ import {CurrentUtilityModule} from "./entities/current_utility/currentUtility.mo
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
+import {TasksService} from "./task.service";
+import {ScheduleModule} from '@nestjs/schedule'
 
 const dbConfig = TypeOrmModule.forRootAsync({
     imports: [ConfigModule],
@@ -31,10 +32,10 @@ const dbConfig = TypeOrmModule.forRootAsync({
     ConfigModule.forRoot( { isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'frontend', 'build'),
-    }), PutlityModule, CurrentUtilityModule
+    }),ScheduleModule.forRoot(), PutlityModule, CurrentUtilityModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, TasksService],
 })
 export class AppModule {
   constructor(private  dataSource: DataSource) {}
