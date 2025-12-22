@@ -1,17 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UtilityConfigService } from '../src/entities/config/utilityConfig.service';
-import { UtilityConfig } from '../src/entities/config/utlityConfig.entity';
+import { CurrentUtilityService } from '../src/entities/current_utility/current-utility.service';
+import { CurrentUtility } from '../src/entities/current_utility/currentUtility.entity';
 
-describe('UtilityConfigService', () => {
-  let service: UtilityConfigService;
-  let repository: Repository<UtilityConfig>;
+describe('CurrentUtilityService', () => {
+  let service: CurrentUtilityService;
+  let repository: Repository<CurrentUtility>;
 
-  const mockUtilityConfig: UtilityConfig = {
+  const mockCurrentUtility: CurrentUtility = {
     id: 1,
     nextrun: new Date('2025-12-20'),
     fields: { key: 'value' },
+    rate: 0.12,
   };
 
   const mockRepository = {
@@ -24,17 +25,17 @@ describe('UtilityConfigService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        UtilityConfigService,
+        CurrentUtilityService,
         {
-          provide: getRepositoryToken(UtilityConfig),
+          provide: getRepositoryToken(CurrentUtility),
           useValue: mockRepository,
         },
       ],
     }).compile();
 
-    service = module.get<UtilityConfigService>(UtilityConfigService);
-    repository = module.get<Repository<UtilityConfig>>(
-      getRepositoryToken(UtilityConfig),
+    service = module.get<CurrentUtilityService>(CurrentUtilityService);
+    repository = module.get<Repository<CurrentUtility>>(
+      getRepositoryToken(CurrentUtility),
     );
   });
 
@@ -47,8 +48,8 @@ describe('UtilityConfigService', () => {
   });
 
   describe('findAll', () => {
-    it('should return an array of utility configs', async () => {
-      const configs = [mockUtilityConfig];
+    it('should return an array of current utilities', async () => {
+      const configs = [mockCurrentUtility];
       mockRepository.find.mockResolvedValue(configs);
 
       const result = await service.findAll();
@@ -59,12 +60,12 @@ describe('UtilityConfigService', () => {
   });
 
   describe('findOne', () => {
-    it('should return a single utility config', async () => {
-      mockRepository.findOneBy.mockResolvedValue(mockUtilityConfig);
+    it('should return a single current utility', async () => {
+      mockRepository.findOneBy.mockResolvedValue(mockCurrentUtility);
 
       const result = await service.findOne(1);
 
-      expect(result).toEqual(mockUtilityConfig);
+      expect(result).toEqual(mockCurrentUtility);
       expect(mockRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
     });
 
@@ -79,7 +80,7 @@ describe('UtilityConfigService', () => {
   });
 
   describe('remove', () => {
-    it('should delete a utility config', async () => {
+    it('should delete a current utility', async () => {
       mockRepository.delete.mockResolvedValue({ affected: 1 });
 
       await service.remove(1);
@@ -90,13 +91,13 @@ describe('UtilityConfigService', () => {
   });
 
   describe('add', () => {
-    it('should create and return a new utility config', async () => {
-      mockRepository.save.mockResolvedValue(mockUtilityConfig);
+    it('should create and return a new current utility', async () => {
+      mockRepository.save.mockResolvedValue(mockCurrentUtility);
 
-      const result = await service.add(mockUtilityConfig);
+      const result = await service.add(mockCurrentUtility);
 
-      expect(result).toEqual(mockUtilityConfig);
-      expect(mockRepository.save).toHaveBeenCalledWith(mockUtilityConfig);
+      expect(result).toEqual(mockCurrentUtility);
+      expect(mockRepository.save).toHaveBeenCalledWith(mockCurrentUtility);
     });
   });
 });

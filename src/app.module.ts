@@ -6,8 +6,8 @@ import { PUtility } from './entities/putility/putility.entity';
 import {PutlityModule} from './entities/putility/putlityModule';
 import { DataSource } from 'typeorm';
 import {PutlityService} from "./entities/putility/putlity.service";
-import {UtilityConfig} from "./entities/config/utlityConfig.entity";
-import {UtilityConfigModule} from "./entities/config/utlityconfig.module";
+import {CurrentUtility} from "./entities/current_utility/currentUtility.entity";
+import {CurrentUtilityModule} from "./entities/current_utility/currentUtility.module";
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
@@ -16,13 +16,13 @@ import { join } from 'path';
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
       database: 'powerswitch.db',
-      entities: [PUtility, UtilityConfig],
+      entities: [PUtility, CurrentUtility],
       synchronize: true, // I think this is not prod-friendly...but will tackle that later
       logging: false,
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'frontend', 'build'),
-    }), PutlityModule, UtilityConfigModule
+    }), PutlityModule, CurrentUtilityModule
   ],
   controllers: [AppController],
   providers: [AppService],
