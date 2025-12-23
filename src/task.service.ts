@@ -5,7 +5,7 @@ import {CronJob} from 'cron';
 
 @Injectable()
 export class TasksService {
-    private readonly logger = new Logger(TasksService.name);
+    private readonly logger: Logger
 
     /*
     Default schedule to run the task every 1st day of the month at noon
@@ -15,6 +15,7 @@ export class TasksService {
     public schedule : string = CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON;
 
     constructor(private  readonly configService: ConfigService, private schedulerRegistry: SchedulerRegistry ) {
+        this.logger  = new Logger(TasksService.name);
         const schedule = this.configService.get<string>('CRON_TIME') || this.schedule;
         const job = new CronJob(schedule, async () => {
            this.logger.debug(`Running a task every ${schedule}`);
