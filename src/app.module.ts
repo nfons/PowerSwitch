@@ -11,27 +11,31 @@ import {CurrentUtilityModule} from "./entities/current_utility/currentUtility.mo
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import {TasksService} from "./task.service";
+import {ScheduleModule} from '@nestjs/schedule'
+
+const dbConfig = TypeOrmModule.forRootAsync({
+    imports: [ConfigModule],
+    useFactory: async (configService: ConfigService) => ({
+      type: 'better-sqlite3',
+      database: configService.get<string>('DB_TABLE') || 'powerswitch.db',
+      entities: [PUtility, CurrentUtility],
+      synchronize: true,
+      logging: false,
+    }),
+    inject: [ConfigService],
+  });
 
 @Module({
   imports: [
+    dbConfig,
     ConfigModule.forRoot( { isGlobal: true }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        type: 'better-sqlite3',
-        database: configService.get<string>('DB_TABLE') || 'powerswitch.db',
-        entities: [PUtility, CurrentUtility],
-        synchronize: true,
-        logging: false,
-      }),
-      inject: [ConfigService],
-    }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'frontend', 'build'),
-    }), PutlityModule, CurrentUtilityModule
+    }),ScheduleModule.forRoot(), PutlityModule, CurrentUtilityModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, TasksService],
 })
 export class AppModule {
   constructor(private  dataSource: DataSource) {}
