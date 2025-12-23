@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
 
-(async () => {
+async function getBestResults (){
   // 1. Launch the browser
   const browser = await puppeteer.launch({ headless: "new" });
   const page = await browser.newPage();
@@ -19,7 +19,7 @@ const puppeteer = require('puppeteer');
     const elements = document.querySelectorAll('.supplier-card');
 
     function getRateCards() {
-      // Get all div elements
+      // Get all div elements by card
       const allDivs = Array.from(elements);
 
       // Filter for divs that contain both "per kwh" and "Term Length"
@@ -39,6 +39,7 @@ const puppeteer = require('puppeteer');
     }
 
     const cards = getRateCards();
+    console.log(cards);
     const results = [];
 
     // Loop through the first 3 cards found
@@ -53,15 +54,17 @@ const puppeteer = require('puppeteer');
 
       // 2. Extract Term Length
       // Looks for the line containing "Term Length" and cleans it
-      let term = "Term not found";
-      const termLine = text.split('\n').find(line => line.includes("Term Length"));
-      if (termLine) {
-        // Usually appears as "12 Months Term Length", we want just "12 Months"
-        term = termLine.replace("Term Length", "").trim();
+      const termMatch = text.match(/(\d+\s+Months?|Month\s+to\s+Month)/i);
+      let term = termMatch ? termMatch[0].toLowerCase() : ""
+      // Cleanup: remove the "months" word if present
+      if (term.includes("months")) {
+        term = term.replace("months", "");
+      } else if (term.includes("month to month")) {
+        term = term.replace("month to month", "1"); // Month to Month is 1 month term
       }
 
       // 3. Extract Provider Name
-      // The provider is usually the very first line of text or inside an Header/Link at the top
+      // The provider is usually the very first line of text or inside a Header/Link at the top
       // We split by newlines and take the first non-empty line that isn't a common UI label
       const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
       let provider = lines[0];
@@ -90,4 +93,6 @@ const puppeteer = require('puppeteer');
   console.log(JSON.stringify(rates, null, 2));
 
   await browser.close();
-})();
+}
+
+getBestResults();
