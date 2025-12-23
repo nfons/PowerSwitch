@@ -16,11 +16,11 @@ const puppeteer = require('puppeteer');
   // 3. Parse the DOM to find the first 3 elements with class "company-info supplier"
   const rates = await page.evaluate(() => {
     // Select all elements with the class
-    const elements = document.querySelectorAll('.company-info.supplier');
+    const elements = document.querySelectorAll('.supplier-card');
 
     function getRateCards() {
       // Get all div elements
-      const allDivs = Array.from(document.querySelectorAll('div'));
+      const allDivs = Array.from(elements);
 
       // Filter for divs that contain both "per kwh" and "Term Length"
       // These unique strings identify a valid rate offer card
