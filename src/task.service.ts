@@ -18,18 +18,20 @@ export class TasksService {
         this.logger  = new Logger(TasksService.name);
         const schedule = this.configService.get<string>('CRON_TIME') || this.schedule;
         const job = new CronJob(schedule, async () => {
-           this.logger.debug(`Running a task every ${schedule}`);
+          this.getUtilityRates();
         });
 
         this.schedulerRegistry.addCronJob(TasksService.name, job);
         job.start();
     }
-    /*
-     We will use this method to call the Power switch website and get the new list of prices
-     compare them to ours, and send out an alert
-     */
-    // @Cron('10 * * * * *')
-    // handleCron() {
-    //     this.logger.debug('Called when the current second is 45');
-    // }
+
+
+    private async getUtilityRates() {
+      // check config to see if rates should use web or csv approach
+      if (this.configService.get('API_TYPE') === 'web') {
+          this.logger.debug('Using WEB call to get utility rates');
+      }  else {
+          this.logger.debug('Using CSV file to get utility rates');
+      }
+    }
 }
