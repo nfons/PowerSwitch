@@ -14,7 +14,7 @@ async function getBestResults (){
   await page.goto(url, { waitUntil: 'networkidle2' });
 
   // 3. Parse the DOM to find the first 3 elements with class "company-info supplier"
-  const rates = await page.evaluate(() => {
+ const rates = await page.evaluate(() => {
     // Select all elements with the class
     const elements = document.querySelectorAll('.supplier-card');
 
@@ -26,7 +26,8 @@ async function getBestResults (){
       // These unique strings identify a valid rate offer card
       const potentialCards = allDivs.filter(div =>
         div.innerText.toLowerCase().includes('per kwh') &&
-        div.innerText.toLowerCase().includes('term length')
+        div.innerText.toLowerCase().includes('term length') &&
+        div.innerText.toLowerCase().includes('see offer details')
       );
 
       // Filter out parent containers (keep only the specific card elements)
@@ -46,11 +47,15 @@ async function getBestResults (){
     for (let i = 0; i < Math.min(3, cards.length); i++) {
       const card = cards[i];
       const text = card.innerText;
-
+      if (text.includes("See Offer Details")) {
+        console.log("Skipping card with 'See Offer Details' only.");
+      }
       // 1. Extract Price
       // Looks for pattern like "$0.11024" or "$0.08"
       const priceMatch = text.match(/\$\d+\.\d+/);
-      const price = priceMatch ? priceMatch[0] + " per kWh" : "Price not found";
+      let price = priceMatch ? priceMatch[0]  : "Price not found";
+      //strip $ sign
+      price = price.replace("$", "");
 
       // 2. Extract Term Length
       // Looks for the line containing "Term Length" and cleans it
@@ -58,7 +63,7 @@ async function getBestResults (){
       let term = termMatch ? termMatch[0].toLowerCase() : ""
       // Cleanup: remove the "months" word if present
       if (term.includes("months")) {
-        term = term.replace("months", "");
+        term = term.replace("months", "").trim();
       } else if (term.includes("month to month")) {
         term = term.replace("month to month", "1"); // Month to Month is 1 month term
       }
@@ -74,10 +79,17 @@ async function getBestResults (){
         provider = provider.split("—")[0].trim();
       }
 
+      // 4. Extract "See Offer Details" URL
+      // We search all anchor tags <a> inside this specific card
+      const links = Array.from(card.querySelectorAll('a'));
+      const offerLink = links.find(a => a.innerText.toLowerCase().includes("see offer details"));
+      const url = offerLink ? offerLink.href : "URL not found";
+
       results.push({
         Provider: provider,
         Term: term,
-        Price: price
+        Price: price,
+        URL: url
       });
     }
 
@@ -95,4 +107,19 @@ async function getBestResults (){
   await browser.close();
 }
 
+async function getResults() {
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  const url = 'https://www.papowerswitch.com/shop-for-rates-results?zip=18966&distributor=1182&distributorrate=R%20-%20Regular%20Residential%20Service&servicetype=residential&usage=700&min-price=&max-price=&offerPreferences%5B%5D=no_cancellation&offerPreferences%5B%5D=no_enrollment&offerPreferences%5B%5D=no_monthly&sortby=est_a';
+  await page.goto(url);
+
+  // Get the full HTML content of the page
+  const htmlContent = await page.content();
+  const title = await page.$eval('.btn', el => el.href);
+  console.log(title);
+
+  await browser.close()
+}
+
 getBestResults();
+//getResults();
