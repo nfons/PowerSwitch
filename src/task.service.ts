@@ -4,6 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import {CronJob} from 'cron';
 import fetch from 'node-fetch';
 import csv from 'csv-parser';
+import { PutlityService } from './entities/putility/putlity.service';
+import { PUtility } from './entities/putility/putility.entity';
 
 @Injectable()
 export class TasksService {
@@ -16,7 +18,7 @@ export class TasksService {
      */
     public schedule : string = CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON;
 
-    constructor(private  readonly configService: ConfigService, private schedulerRegistry: SchedulerRegistry ) {
+    constructor(private  readonly configService: ConfigService, private schedulerRegistry: SchedulerRegistry, private putilityService: PutlityService) {
         this.logger  = new Logger(TasksService.name);
         const schedule = this.configService.get<string>('CRON_TIME') || this.schedule;
         const job = new CronJob(schedule, async () => {
@@ -68,9 +70,31 @@ export class TasksService {
           .on('end', async () => {
             // Sort by numeric price (Ascending)
             results.sort((a: any, b: any) => a.Price - b.Price);
+            //  filter out stuff we don't like
+            // remove results with price <= 0
+            // remove results that have monthly fee, cancellation fee
+            let filter  = {
+              'Cancellation Fee': true, // sometimes its blank, sometimes they put 0
+              'Monthly Fee': 'Yes',
+              'Monthly service fee amount': true //sometimes its blank, sometimes they put 0
+            }
             // remove results that have 0 for price...these seem to be old and outdataed data or something
             let sanitizeResults = results.filter((item) => {
               if(item.Price > 0) {
+                for(let key in filter) {
+                  switch (key) {
+                    case 'Monthly Fee':
+                      if(item[key] === 'Yes' || (!isNaN(item[key]) && parseFloat(item[key]) > 0)){
+                        return false;
+                      }
+                      break;
+                    case 'Cancellation Fee':
+                    case 'Monthly service fee amount':
+                      if(item[key] !== '0' && item[key] !== '' && item[key] !== undefined && item[key] !== 'No'){
+                        return false;
+                      } break;
+                  }
+                }
                 return item;
               }
             });
@@ -88,16 +112,15 @@ export class TasksService {
               if(item['Contact Phone Number']) {
                 termToSearch = encodeURIComponent(item['Contact Phone Number']);
               }
-              // store url as google result
-              results.push({
-                name: item.Supplier,
-                type,
-                rate: item.Price,
-                rateLength,
-                url: `https://www.google.com/search?q=${termToSearch}`
-              });
+              let putilityEntity : PUtility = new PUtility()
+              putilityEntity.name = item.Supplier;
+              putilityEntity.rate = item.Price;
+              putilityEntity.type = type;
+              putilityEntity.rateLength = rateLength;
+              putilityEntity.url = `https://www.google.com/search?q=${termToSearch}`;
+              this.putilityService.add(putilityEntity); // add entry to db
+              this.logger.debug('Added Putility entry to DB:', putilityEntity.name);
             });
-            this.logger.debug(results);
 
           })
           .on('error', (err) => {
