@@ -131,6 +131,11 @@ export class TasksService {
         this.logger.error('Error fetching the CSV:', error.message);
       }
     }
+
+    private async fetchWeb(){
+      this.logger.debug('Fetching utility rates from web API...');
+      // TODO
+    }
     private async getUtilityRates() {
       // check config to see if rates should use web or csv approach
       if (this.configService.get('API_TYPE') === 'web') {
