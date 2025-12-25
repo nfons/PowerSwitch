@@ -30,6 +30,32 @@ jest.mock('cron', () => {
 // Mock node-fetch
 jest.mock('node-fetch', () => jest.fn());
 
+// Mock Logger
+// This is stupid isn't it? I feel like its overkill to mock everything....
+jest.mock('@nestjs/common', () => {
+  const actual = jest.requireActual('@nestjs/common');
+
+  class MockLogger {
+    log = jest.fn();
+    error = jest.fn();
+    warn = jest.fn();
+    debug = jest.fn();
+    verbose = jest.fn();
+
+    static overrideLogger = jest.fn();
+    static log = jest.fn();
+    static error = jest.fn();
+    static warn = jest.fn();
+    static debug = jest.fn();
+    static verbose = jest.fn();
+  }
+
+  return {
+    ...actual,
+    Logger: MockLogger,
+  };
+});
+
 describe('TasksService', () => {
   let service: TasksService;
   let configService: ConfigService;
