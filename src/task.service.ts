@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, SchedulerRegistry, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
-import {CronJob} from 'cron';
+import { CronJob } from 'cron';
 import fetch from 'node-fetch';
 import csv from 'csv-parser';
 import { PutlityService } from './entities/putility/putlity.service';

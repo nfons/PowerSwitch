@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry, CronExpression } from '@nestjs/schedule';
 import { TasksService } from '../src/task.service';
 import { CronJob } from 'cron';
+import { PutlityService } from '../src/entities/putility/putlity.service';
 
 // Mock CronJob
 jest.mock('cron', () => {
@@ -26,11 +27,15 @@ jest.mock('cron', () => {
   return { CronJob: MockCronJob };
 });
 
+// Mock node-fetch
+jest.mock('node-fetch', () => jest.fn());
+
 describe('TasksService', () => {
   let service: TasksService;
   let configService: ConfigService;
   let schedulerRegistry: SchedulerRegistry;
   let mockCronJob: any;
+
 
   const mockConfigService = {
     get: jest.fn(),
@@ -40,6 +45,10 @@ describe('TasksService', () => {
     addCronJob: jest.fn(),
     getCronJob: jest.fn(),
     deleteCronJob: jest.fn(),
+  };
+
+  const mockPutlityService = {
+    add: jest.fn().mockResolvedValue({}),
   };
 
   beforeEach(async () => {
@@ -55,6 +64,10 @@ describe('TasksService', () => {
         {
           provide: SchedulerRegistry,
           useValue: mockSchedulerRegistry,
+        },
+        {
+          provide: PutlityService,
+          useValue: mockPutlityService,
         },
       ],
     }).compile();
@@ -91,6 +104,10 @@ describe('TasksService', () => {
             provide: SchedulerRegistry,
             useValue: mockSchedulerRegistry,
           },
+          {
+            provide: PutlityService,
+            useValue: mockPutlityService,
+          },
         ],
       }).compile();
 
@@ -110,6 +127,10 @@ describe('TasksService', () => {
           {
             provide: SchedulerRegistry,
             useValue: mockSchedulerRegistry,
+          },
+          {
+            provide: PutlityService,
+            useValue: mockPutlityService,
           },
         ],
       }).compile();
@@ -133,6 +154,10 @@ describe('TasksService', () => {
           {
             provide: SchedulerRegistry,
             useValue: mockSchedulerRegistry,
+          },
+          {
+            provide: PutlityService,
+            useValue: mockPutlityService,
           },
         ],
       }).compile();
@@ -163,6 +188,10 @@ describe('TasksService', () => {
             provide: SchedulerRegistry,
             useValue: mockSchedulerRegistry,
           },
+          {
+            provide: PutlityService,
+            useValue: mockPutlityService,
+          },
         ],
       }).compile();
 
@@ -182,6 +211,10 @@ describe('TasksService', () => {
           {
             provide: SchedulerRegistry,
             useValue: mockSchedulerRegistry,
+          },
+          {
+            provide: PutlityService,
+            useValue: mockPutlityService,
           },
         ],
       }).compile();
@@ -203,6 +236,10 @@ describe('TasksService', () => {
           {
             provide: SchedulerRegistry,
             useValue: mockSchedulerRegistry,
+          },
+          {
+            provide: PutlityService,
+            useValue: mockPutlityService,
           },
         ],
       }).compile();
@@ -228,6 +265,10 @@ describe('TasksService', () => {
             provide: SchedulerRegistry,
             useValue: mockSchedulerRegistry,
           },
+          {
+            provide: PutlityService,
+            useValue: mockPutlityService,
+          },
         ],
       }).compile();
 
@@ -246,6 +287,10 @@ describe('TasksService', () => {
           {
             provide: SchedulerRegistry,
             useValue: mockSchedulerRegistry,
+          },
+          {
+            provide: PutlityService,
+            useValue: mockPutlityService,
           },
         ],
       }).compile();
@@ -277,12 +322,243 @@ describe('TasksService', () => {
               provide: SchedulerRegistry,
               useValue: mockSchedulerRegistry,
             },
+            {
+              provide: PutlityService,
+              useValue: mockPutlityService,
+            },
           ],
         }).compile();
 
         const service = module.get<TasksService>(TasksService);
         expect(service).toBeDefined();
       }
+    });
+  });
+
+  describe('parsePrice', () => {
+
+    it('should parse valid price string with dollar sign', () => {
+      const result = service['parsePrice']('$12.99');
+      expect(result).toBe(12.99);
+    });
+
+    it('should parse price string without dollar sign', () => {
+      const result = service['parsePrice']('25.50');
+      expect(result).toBe(25.50);
+    });
+
+    it('should parse price with multiple special characters', () => {
+      const result = service['parsePrice']('$1,234.56');
+      expect(result).toBe(1234.56);
+    });
+
+    it('should return Infinity for null price', () => {
+      const result = service['parsePrice'](null);
+      expect(result).toBe(Infinity);
+    });
+
+    it('should return Infinity for undefined price', () => {
+      const result = service['parsePrice'](undefined);
+      expect(result).toBe(Infinity);
+    });
+
+    it('should return Infinity for empty string', () => {
+      const result = service['parsePrice']('');
+      expect(result).toBe(Infinity);
+    });
+
+    it('should parse price with cents', () => {
+      const result = service['parsePrice']('0.99');
+      expect(result).toBe(0.99);
+    });
+
+    it('should parse integer price', () => {
+      const result = service['parsePrice']('100');
+      expect(result).toBe(100);
+    });
+
+    it('should handle price with spaces', () => {
+      const result = service['parsePrice']('$ 12.99 ');
+      expect(result).toBe(12.99);
+    });
+
+    it('should parse price with only numbers', () => {
+      const result = service['parsePrice']('42');
+      expect(result).toBe(42);
+    });
+  });
+
+  describe('fetchCSV', () => {
+    let mockFetch: jest.Mock;
+    let mockStream: any;
+
+    beforeEach(async () => {
+      mockFetch = require('node-fetch') as jest.Mock;
+      mockFetch.mockClear();
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should fetch gas CSV when type is gas', async () => {
+      const gasUrl = 'https://example.com/gas.csv';
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_URL') return gasUrl;
+        return undefined;
+      });
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        body: {
+          pipe: jest.fn().mockReturnValue({
+            on: jest.fn().mockReturnThis(),
+          }),
+        },
+      });
+
+      await service['fetchCSV']('gas');
+
+      expect(mockFetch).toHaveBeenCalledWith(gasUrl);
+    });
+
+    it('should fetch electric CSV when type is electric', async () => {
+      const electricUrl = 'https://example.com/electric.csv';
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'ELECTRIC_URL') return electricUrl;
+        return undefined;
+      });
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        body: {
+          pipe: jest.fn().mockReturnValue({
+            on: jest.fn().mockReturnThis(),
+          }),
+        },
+      });
+
+      await service['fetchCSV']('electric');
+
+      expect(mockFetch).toHaveBeenCalledWith(electricUrl);
+    });
+
+    it('should handle fetch error gracefully', async () => {
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_URL') return 'https://example.com/gas.csv';
+        return undefined;
+      });
+
+      mockFetch.mockRejectedValue(new Error('Network error'));
+
+      await expect(service['fetchCSV']('gas')).resolves.not.toThrow();
+    });
+
+    it('should handle non-ok response', async () => {
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_URL') return 'https://example.com/gas.csv';
+        return undefined;
+      });
+
+      mockFetch.mockResolvedValue({
+        ok: false,
+        statusText: 'Not Found',
+      });
+
+      await expect(service['fetchCSV']('gas')).resolves.not.toThrow();
+    });
+
+    it('should handle response without body', async () => {
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_URL') return 'https://example.com/gas.csv';
+        return undefined;
+      });
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        body: null,
+      });
+
+      await expect(service['fetchCSV']('gas')).resolves.not.toThrow();
+    });
+  });
+
+  describe('getUtilityRates', () => {
+    beforeEach(() => {
+      jest.spyOn(service as any, 'fetchCSV').mockResolvedValue(undefined);
+    });
+
+    it('should use web approach when API_TYPE is web', async () => {
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'API_TYPE') return 'web';
+        return undefined;
+      });
+
+      await service['getUtilityRates']();
+
+      expect(mockConfigService.get).toHaveBeenCalledWith('API_TYPE');
+      expect(service['fetchCSV']).not.toHaveBeenCalled();
+    });
+
+    it('should fetch gas CSV when GAS_URL is configured', async () => {
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'API_TYPE') return 'csv';
+        if (key === 'GAS_URL') return 'https://example.com/gas.csv';
+        return undefined;
+      });
+
+      await service['getUtilityRates']();
+
+      expect(service['fetchCSV']).toHaveBeenCalledWith('gas');
+    });
+
+    it('should fetch electric CSV when ELECTRIC_URL is configured', async () => {
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'API_TYPE') return 'csv';
+        if (key === 'ELECTRIC_URL') return 'https://example.com/electric.csv';
+        return undefined;
+      });
+
+      await service['getUtilityRates']();
+
+      expect(service['fetchCSV']).toHaveBeenCalledWith('electric');
+    });
+
+    it('should fetch both gas and electric when both URLs are configured', async () => {
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'API_TYPE') return 'csv';
+        if (key === 'GAS_URL') return 'https://example.com/gas.csv';
+        if (key === 'ELECTRIC_URL') return 'https://example.com/electric.csv';
+        return undefined;
+      });
+
+      await service['getUtilityRates']();
+
+      expect(service['fetchCSV']).toHaveBeenCalledWith('gas');
+      expect(service['fetchCSV']).toHaveBeenCalledWith('electric');
+      expect(service['fetchCSV']).toHaveBeenCalledTimes(2);
+    });
+
+    it('should not fetch CSV when neither URL is configured', async () => {
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'API_TYPE') return 'csv';
+        return undefined;
+      });
+
+      await service['getUtilityRates']();
+
+      expect(service['fetchCSV']).not.toHaveBeenCalled();
+    });
+
+    it('should default to CSV approach when API_TYPE is not set', async () => {
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_URL') return 'https://example.com/gas.csv';
+        return undefined;
+      });
+
+      await service['getUtilityRates']();
+
+      expect(service['fetchCSV']).toHaveBeenCalledWith('gas');
     });
   });
 });
