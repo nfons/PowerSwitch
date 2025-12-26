@@ -27,6 +27,16 @@ jest.mock('cron', () => {
 // Mock node-fetch
 jest.mock('node-fetch', () => jest.fn());
 
+// Mock puppeteer
+jest.mock('puppeteer', () => ({
+  launch: jest.fn(),
+}));
+
+// Mock cheerio
+jest.mock('cheerio', () => ({
+  load: jest.fn(),
+}));
+
 // Mock Logger
 // This is stupid isn't it? I feel like its overkill to mock everything....
 jest.mock('@nestjs/common', () => {
@@ -53,7 +63,7 @@ jest.mock('@nestjs/common', () => {
   };
 });
 
-xdescribe('TasksService', () => {
+describe('TasksService', () => {
   let service: TasksService;
   let configService: ConfigService;
   let schedulerRegistry: SchedulerRegistry;
@@ -513,7 +523,7 @@ xdescribe('TasksService', () => {
     });
   });
 
-  xdescribe('getUtilityRates', () => {
+  describe('getUtilityRates', () => {
     beforeEach(() => {
       jest.spyOn(service as any, 'fetchCSV').mockResolvedValue(undefined);
     });
@@ -589,6 +599,420 @@ xdescribe('TasksService', () => {
       await service['getUtilityRates']();
 
       expect(service['fetchCSV']).toHaveBeenCalledWith('gas');
+    });
+  });
+  describe('getGoogleUrl', () => {
+    it('should return encoded Google search URL for a simple term', () => {
+      const term = 'Acme Energy';
+      const result = service['getGoogleUrl'](term);
+      expect(result).toBe('https://www.google.com/search?q=Acme%20Energy');
+    });
+
+    it('should properly encode special characters', () => {
+      const term = 'Energy & Power Inc.';
+      const result = service['getGoogleUrl'](term);
+      expect(result).toBe('https://www.google.com/search?q=Energy%20%26%20Power%20Inc.');
+    });
+
+    it('should handle phone numbers', () => {
+      const term = '1-800-555-1234';
+      const result = service['getGoogleUrl'](term);
+      expect(result).toBe('https://www.google.com/search?q=1-800-555-1234');
+    });
+
+    it('should encode URLs in search terms', () => {
+      const term = 'https://example.com/supplier';
+      const result = service['getGoogleUrl'](term);
+      expect(result).toBe('https://www.google.com/search?q=https%3A%2F%2Fexample.com%2Fsupplier');
+    });
+
+    it('should handle empty string', () => {
+      const term = '';
+      const result = service['getGoogleUrl'](term);
+      expect(result).toBe('https://www.google.com/search?q=');
+    });
+
+    it('should encode terms with multiple spaces', () => {
+      const term = 'Power  Company  Name';
+      const result = service['getGoogleUrl'](term);
+      expect(result).toBe('https://www.google.com/search?q=Power%20%20Company%20%20Name');
+    });
+
+    it('should encode special characters like quotes', () => {
+      const term = 'Company "Best Rate"';
+      const result = service['getGoogleUrl'](term);
+      expect(result).toBe('https://www.google.com/search?q=Company%20%22Best%20Rate%22');
+    });
+
+    it('should encode plus signs', () => {
+      const term = 'Energy+Plus';
+      const result = service['getGoogleUrl'](term);
+      expect(result).toBe('https://www.google.com/search?q=Energy%2BPlus');
+    });
+  });
+
+  describe('fetchWeb', () => {
+    let mockPuppeteer: any;
+    let mockCheerio: any;
+    let mockBrowser: any;
+    let mockPage: any;
+
+    beforeEach(() => {
+      mockPuppeteer = require('puppeteer');
+      mockCheerio = require('cheerio');
+
+      mockPage = {
+        goto: jest.fn().mockResolvedValue(undefined),
+        content: jest.fn().mockResolvedValue('<html></html>'),
+      };
+
+      mockBrowser = {
+        newPage: jest.fn().mockResolvedValue(mockPage),
+        close: jest.fn().mockResolvedValue(undefined),
+      };
+
+      mockPuppeteer.launch.mockResolvedValue(mockBrowser);
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should launch puppeteer in headless mode', async () => {
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        return undefined;
+      });
+
+      mockCheerio.load.mockReturnValue(() => ({
+        length: 0,
+        each: jest.fn(),
+      }));
+
+      await service['fetchWeb']('gas');
+
+      expect(mockPuppeteer.launch).toHaveBeenCalledWith({ headless: true });
+    });
+
+    it('should navigate to gas URL when type is gas', async () => {
+      const gasWebUrl = 'https://example.com/gas-rates';
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_WEB_URL') return gasWebUrl;
+        return undefined;
+      });
+
+      mockCheerio.load.mockReturnValue(() => ({
+        length: 0,
+        each: jest.fn(),
+      }));
+
+      await service['fetchWeb']('gas');
+
+      expect(mockPage.goto).toHaveBeenCalledWith(gasWebUrl, { waitUntil: 'networkidle2' });
+    });
+
+    it('should navigate to electric URL when type is electric', async () => {
+      const electricWebUrl = 'https://example.com/electric-rates';
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'ELECTRIC_WEB_URL') return electricWebUrl;
+        return undefined;
+      });
+
+      mockCheerio.load.mockReturnValue(() => ({
+        length: 0,
+        each: jest.fn(),
+      }));
+
+      await service['fetchWeb']('electric');
+
+      expect(mockPage.goto).toHaveBeenCalledWith(electricWebUrl, { waitUntil: 'networkidle2' });
+    });
+
+    it('should fetch and parse HTML content', async () => {
+      const htmlContent = '<html><body><div class="supplier-card">Test</div></body></html>';
+      mockPage.content.mockResolvedValue(htmlContent);
+
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        return undefined;
+      });
+
+      mockCheerio.load.mockReturnValue(() => ({
+        length: 0,
+        each: jest.fn(),
+      }));
+
+      await service['fetchWeb']('gas');
+
+      expect(mockPage.content).toHaveBeenCalled();
+      expect(mockCheerio.load).toHaveBeenCalledWith(htmlContent);
+    });
+
+    it('should close browser after fetching data', async () => {
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        return undefined;
+      });
+
+      mockCheerio.load.mockReturnValue(() => ({
+        length: 0,
+        each: jest.fn(),
+      }));
+
+      await service['fetchWeb']('gas');
+
+      expect(mockBrowser.close).toHaveBeenCalled();
+    });
+
+    it('should search for supplier-card elements', async () => {
+      const htmlContent = `
+        <html>
+          <body>
+            <div class="supplier-card">
+              <div class="name">Acme Energy</div>
+              <div>$0.12 per kwh</div>
+              <div>12 Months</div>
+              <div class="second"><a href="https://example.com/acme">Details</a></div>
+            </div>
+          </body>
+        </html>
+      `;
+      mockPage.content.mockResolvedValue(htmlContent);
+
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'ELECTRIC_WEB_URL') return 'https://example.com/electric';
+        return undefined;
+      });
+
+      const supplierCardMock = {
+        length: 1,
+        each: jest.fn(),
+      };
+
+      mockCheerio.load.mockReturnValue((selector: string) => {
+        if (selector === '.supplier-card') {
+          return supplierCardMock;
+        }
+        if (selector === 'div.dist-card') {
+          return {
+            length: 0,
+            each: jest.fn(),
+          };
+        }
+        return { length: 0 };
+      });
+
+      await service['fetchWeb']('electric');
+
+      expect(mockCheerio.load).toHaveBeenCalledWith(htmlContent);
+      expect(supplierCardMock.each).toHaveBeenCalled();
+      expect(mockBrowser.close).toHaveBeenCalled();
+    });
+
+    it('should handle empty supplier cards', async () => {
+      const htmlContent = '<html><body></body></html>';
+      mockPage.content.mockResolvedValue(htmlContent);
+
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        return undefined;
+      });
+
+      mockCheerio.load.mockReturnValue(() => ({
+        length: 0,
+        each: jest.fn(),
+      }));
+
+      await service['fetchWeb']('gas');
+
+      expect(mockBrowser.close).toHaveBeenCalled();
+    });
+
+    it('should call each on supplier-card elements', async () => {
+      const htmlContent = `
+        <html>
+          <body>
+            <div class="supplier-card">Card 1</div>
+            <div class="supplier-card">Card 2</div>
+            <div class="supplier-card">Card 3</div>
+            <div class="supplier-card">Card 4</div>
+          </body>
+        </html>
+      `;
+      mockPage.content.mockResolvedValue(htmlContent);
+
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        return undefined;
+      });
+
+      const supplierCardMock = {
+        length: 4,
+        each: jest.fn(),
+      };
+
+      mockCheerio.load.mockReturnValue((selector: string) => {
+        if (selector === '.supplier-card') {
+          return supplierCardMock;
+        }
+        if (selector === 'div.dist-card') {
+          return {
+            length: 0,
+            each: jest.fn(),
+          };
+        }
+        return { length: 0 };
+      });
+
+      await service['fetchWeb']('gas');
+
+      expect(supplierCardMock.each).toHaveBeenCalled();
+      expect(mockBrowser.close).toHaveBeenCalled();
+    });
+
+    it('should process PECO dist-card elements', async () => {
+      const htmlContent = `
+        <html>
+          <body>
+            <div class="dist-card">
+              <div class="name">PECO</div>
+              <div>$0.10 per kwh</div>
+              <div>1 Month</div>
+            </div>
+          </body>
+        </html>
+      `;
+      mockPage.content.mockResolvedValue(htmlContent);
+
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'ELECTRIC_WEB_URL') return 'https://example.com/electric';
+        return undefined;
+      });
+
+      const distCardMock = {
+        length: 1,
+        each: jest.fn(),
+      };
+
+      mockCheerio.load.mockReturnValue((selector: string) => {
+        if (selector === '.supplier-card') {
+          return {
+            length: 0,
+            each: jest.fn(),
+          };
+        }
+        if (selector === 'div.dist-card') {
+          return distCardMock;
+        }
+        return { length: 0 };
+      });
+
+      await service['fetchWeb']('electric');
+
+      expect(distCardMock.each).toHaveBeenCalled();
+      expect(mockBrowser.close).toHaveBeenCalled();
+    });
+
+    it('should extract price from dollar amount regex', async () => {
+      const htmlContent = '<html><body><div class="supplier-card">Rate: $0.15390 per kwh</div></body></html>';
+      mockPage.content.mockResolvedValue(htmlContent);
+
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        return undefined;
+      });
+
+      mockCheerio.load.mockReturnValue(() => ({
+        length: 0,
+        each: jest.fn(),
+      }));
+
+      await service['fetchWeb']('gas');
+
+      expect(mockCheerio.load).toHaveBeenCalled();
+    });
+
+    it('should extract term length from months pattern', async () => {
+      const htmlContent = '<html><body><div class="supplier-card">24 Months contract</div></body></html>';
+      mockPage.content.mockResolvedValue(htmlContent);
+
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        return undefined;
+      });
+
+      mockCheerio.load.mockReturnValue(() => ({
+        length: 0,
+        each: jest.fn(),
+      }));
+
+      await service['fetchWeb']('gas');
+
+      expect(mockCheerio.load).toHaveBeenCalled();
+    });
+
+    it('should handle Month to Month term pattern', async () => {
+      const htmlContent = '<html><body><div class="supplier-card">Month to Month plan</div></body></html>';
+      mockPage.content.mockResolvedValue(htmlContent);
+
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        return undefined;
+      });
+
+      mockCheerio.load.mockReturnValue(() => ({
+        length: 0,
+        each: jest.fn(),
+      }));
+
+      await service['fetchWeb']('gas');
+
+      expect(mockCheerio.load).toHaveBeenCalled();
+    });
+
+    it('should prevent duplicate entries with same provider and price', async () => {
+      const htmlContent = `
+        <html>
+          <body>
+            <div class="supplier-card">Provider A $0.12</div>
+            <div class="supplier-card">Provider A $0.12</div>
+          </body>
+        </html>
+      `;
+      mockPage.content.mockResolvedValue(htmlContent);
+
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        return undefined;
+      });
+
+      mockCheerio.load.mockReturnValue(() => ({
+        length: 0,
+        each: jest.fn(),
+      }));
+
+      await service['fetchWeb']('gas');
+
+      expect(mockBrowser.close).toHaveBeenCalled();
+    });
+
+    it('should skip suppliers with Unknown provider name', async () => {
+      const htmlContent = '<html><body><div class="supplier-card">$0.12 per kwh</div></body></html>';
+      mockPage.content.mockResolvedValue(htmlContent);
+
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        return undefined;
+      });
+
+      mockCheerio.load.mockReturnValue(() => ({
+        length: 0,
+        each: jest.fn(),
+      }));
+
+      await service['fetchWeb']('gas');
+
+      expect(mockBrowser.close).toHaveBeenCalled();
     });
   });
 });

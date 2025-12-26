@@ -4,6 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { CronJob } from 'cron';
 import fetch from 'node-fetch';
 import csv from 'csv-parser';
+import puppeteer from 'puppeteer';
+import * as cheerio from 'cheerio';
 import { PutlityService } from './entities/putility/putlity.service';
 import { PUtility } from './entities/putility/putility.entity';
 
@@ -207,18 +209,22 @@ export class TasksService {
           const link = card.find('div.second > a').first();
           if (link.length > 0) {
             provider_url = link.attr('href');
+          } else {
+            // if no link, use google search
+            provider_url = this.getGoogleUrl(provider);
           }
 
           // Prevent duplicates This was happening couple of times for some reason
           const isDuplicate = results.some(r => r.provider === provider && r.price === price);
 
           if (!isDuplicate && provider !== "Unknown") {
-            results.push({
-              provider,
-              termLength: term,
-              price,
-              url: provider_url
-            });
+            let putilityEntity : PUtility = new PUtility()
+            putilityEntity.name = provider
+            putilityEntity.rate = price
+            putilityEntity.type = type;
+            putilityEntity.rateLength = term
+            putilityEntity.url = provider_url
+            this.putilityService.add(putilityEntity); // add entry to db
           }
         }
       }
