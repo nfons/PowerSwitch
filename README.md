@@ -1,47 +1,127 @@
+# PowerSwitch
 
-## Description
-TODO will fill out later
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+A NestJS-based application for managing and automating Utility Provider switching with a built-in web interface.
 
-## Project setup
+## Features
 
-```bash
-$ npm install
-```
+- TODO
 
-## Compile and run the project
+## Quick Start
 
-```bash
-# development
-$ npm run start
+### Using Docker (Recommended)
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
+The easiest way to get started is using Docker:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+docker pull ghcr.io/nfons/powerswitch/powerswitch:latest
+docker run -p 8080:8080 powerswitch
 ```
 
-## Deployment
+Access the application at `http://localhost:8080`
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### From Source
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+**Prerequisites:**
+- Node.js (v16 or higher)
+- npm or yarn
+
+**Installation:**
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Clone the repository
+git clone git@github.com:nfons/PowerSwitch.git
+cd PowerSwitch
+
+# Install dependencies
+npm install
+
+# Copy sample environment file and configure
+cp sample.env .env
+# Edit .env with your settings
 ```
+
+**Configuration:**
+
+Edit the `.env` file to customize your setup:
+
+```env
+DB_TABLE=powertable
+CRON_TIME=* * * * *
+```
+
+**Run the application:**
+
+```bash
+# Development mode with hot reload
+npm run start:dev
+
+# Production mode
+npm run build && npm run start:prod
+```
+
+## Development
+
+### Available Scripts
+
+```bash
+# Start development server
+npm run start:dev
+
+# Build the project
+npm run build
+```
+
+### Project Structure
+
+```
+PowerSwitch/
+├── src/              # Source code
+├── frontend/         # UI
+```
+
+## Testing
+
+```bash
+# Run unit tests
+npm run test
+
+```
+
+## Docker Deployment
+
+### Pull from Registry
+
+```bash
+docker pull ghcr.io/nfons/powerswitch/powerswitch:latest
+```
+
+### Run Container
+
+```bash
+docker run -p 8080:8080 powerswitch
+```
+Access the application at `http://localhost:8080`
+
+## Technology Stack
+
+- **Framework:** [NestJS](https://nestjs.com/)
+- **Language:** TypeScript
+- **Database:** SQLite with TypeORM
+- **Testing:** Jest
+- **Frontend:** React (Via CRA)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Do some awesome stuff
+3. Open a Pull Request
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE.md](LICENSE.md) file for details.
+
+## Support
+
+If you encounter any issues or have questions, please [open an issue](https://github.com/nfons/PowerSwitch/issues) on GitHub.
