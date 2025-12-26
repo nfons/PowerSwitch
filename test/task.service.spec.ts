@@ -6,12 +6,9 @@ import { CronJob } from 'cron';
 
 // Mock CronJob
 jest.mock('cron', () => {
-  const mockStart = jest.fn();
-  const mockStop = jest.fn();
-
   class MockCronJob {
-    public start = mockStart;
-    public stop = mockStop;
+    public start = jest.fn();
+    public stop = jest.fn();
     private callback: () => void;
 
     constructor(cronTime: string, onTick: () => void) {
@@ -31,13 +28,16 @@ describe('TasksService', () => {
   let configService: ConfigService;
   let schedulerRegistry: SchedulerRegistry;
   let mockCronJob: any;
+  let testingModule: TestingModule;
 
   const mockConfigService = {
     get: jest.fn(),
   };
 
   const mockSchedulerRegistry = {
-    addCronJob: jest.fn(),
+    addCronJob: jest.fn((name: string, job: any) => {
+      mockCronJob = job;
+    }),
     getCronJob: jest.fn(),
     deleteCronJob: jest.fn(),
   };
@@ -45,7 +45,7 @@ describe('TasksService', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
 
-    const module: TestingModule = await Test.createTestingModule({
+    testingModule = await Test.createTestingModule({
       providers: [
         TasksService,
         {
@@ -59,12 +59,16 @@ describe('TasksService', () => {
       ],
     }).compile();
 
-    service = module.get<TasksService>(TasksService);
-    configService = module.get<ConfigService>(ConfigService);
-    schedulerRegistry = module.get<SchedulerRegistry>(SchedulerRegistry);
+    service = testingModule.get<TasksService>(TasksService);
+    configService = testingModule.get<ConfigService>(ConfigService);
+    schedulerRegistry = testingModule.get<SchedulerRegistry>(SchedulerRegistry);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    // Stop the cron job to allow tests to exit gracefully
+    if (mockCronJob && mockCronJob.stop) {
+      mockCronJob.stop();
+    }
     jest.restoreAllMocks();
   });
 
