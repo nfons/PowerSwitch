@@ -18,9 +18,33 @@ export class PutlityService {
     findOne(id: number): Promise<PUtility | null> {
         return this.PUtilityRepository.findOneBy({ id });
     }
-    // TODO
-    findBest(type: string): Promise<PUtility> | null {
-        return;
+    async findBest(type: string): Promise<PUtility | null> {
+        // Get all records of the specified type
+        const records = await this.PUtilityRepository.find({
+            where: { type }
+        });
+
+        if (records.length === 0) {
+            return null;
+        }
+
+        const now = new Date();
+
+        // Filter valid records (not expired)
+        const validRecords = records.filter(record => {
+            const expirationDate = new Date(record.createdAt);
+            expirationDate.setMonth(expirationDate.getMonth() + record.rateLength);
+            return expirationDate > now;
+        });
+
+        if (validRecords.length === 0) {
+            return null;
+        }
+
+        // Find the record with the lowest rate
+        return validRecords.reduce((best, current) => {
+            return current.rate < best.rate ? current : best;
+        });
     }
 
     async remove(id: number): Promise<void> {
