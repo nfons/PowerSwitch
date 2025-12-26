@@ -21,7 +21,7 @@ export class PutlityService {
     async findBest(type: string): Promise<PUtility | null> {
         // Get all records of the specified type
         const records = await this.PUtilityRepository.find({
-            where: { type }
+            where: { type: type }
         });
 
         if (records.length === 0) {

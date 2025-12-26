@@ -58,7 +58,7 @@ export class AppController {
   }
 
   @Get('/putility/best/:type')
-  async getBestPutlity(type: string ): Promise<PUtility | null> {
+  async getBestPutlity(@Param('type')type: string ): Promise<PUtility | null> {
       const best =  await this.putlityService.findBest(type);
       if (best === null) {
         throw new NotFoundException('No best utility found');
