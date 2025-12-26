@@ -42,6 +42,72 @@ export class TasksService {
       return parseFloat(cleanStr);
     }
 
+  private getDataFromNode(el:any, $:any, type:string, results: any) {
+
+    const element = $(el);
+
+    // Traverse up parents until we find a container that has "Term Length" inside it
+    // This confirms we are inside a Rate Card
+    let card = element.closest(':has(:contains("Term Length"))');
+
+    if (card.length > 0) {
+      // Provider
+      // Providers are usually in an <img> alt attribute or a header tag (h2, h3)
+      let provider = "Unknown";
+      const providerCard = card.find('.name').first();
+
+      if (providerCard.length > 0) {
+        provider = providerCard.text();
+      }
+
+
+
+      // Price
+      // Look for the dollar amount near the "per kwh" text
+      let price = "";
+      // Get all text in the parent of the indicator (e.g., "$0.11390 per kwh")
+      const priceText = card.text();
+      const priceMatch = priceText.match(/\$\d+\.\d+/);
+      if (priceMatch) {
+        price = priceMatch[0].replace('$', '');
+      }
+
+      // Term
+      // Default to 1 if not found
+      let term = "1";
+      const cardText = card.text();
+      const termMatch = cardText.match(/(\d+\s+Months?|Month\s+to\s+Month)/i);
+      if (termMatch) {
+        term = termMatch[1];
+        // We want integer values here to do compare at a later time
+        if (term.includes('Months')) term = term.replace('Months', '').replace(" ", '');
+        else if (term.includes('Month to Month')) term = '1';
+      }
+
+      // URL
+      let provider_url = "";
+      const link : any = card.find('div.second > a').first();
+      if (link.length > 0) {
+        provider_url = link.attr('href').toString();
+      } else {
+        // if no link, use google search
+        provider_url = this.getGoogleUrl(provider);
+      }
+
+      // Prevent duplicates This was happening couple of times for some reason
+      const isDuplicate = results.some(r => r.provider === provider && r.price === price);
+
+      if (!isDuplicate && provider !== "Unknown") {
+        let putilityEntity : PUtility = new PUtility()
+        putilityEntity.name = provider
+        putilityEntity.rate = parseFloat(price)
+        putilityEntity.type = type;
+        putilityEntity.rateLength = parseInt(term)
+        putilityEntity.url = provider_url
+        this.putilityService.add(putilityEntity);
+      }
+    }
+  }
     private async fetchCSV(type: string){
 
       const URL = type === 'gas' ? this.configService.get('GAS_URL') : this.configService.get('ELECTRIC_URL');
@@ -139,7 +205,7 @@ export class TasksService {
       const page = await browser.newPage();
 
       // 2 Navigate to URL
-      let url = type === 'gas' ? this.configService.get('GAS_WEB_URL') : this.configService.get('ELECTRIC_WEB_URL');
+      let url = type === 'gas' ? this.configService.get('GAS_URL') : this.configService.get('ELECTRIC_URL');
       await page.goto(url, { waitUntil: 'networkidle2' });
 
       // 3 Fetch the raw HTML string (Requested Method)
@@ -147,7 +213,7 @@ export class TasksService {
 
       // 4 Parse HTML using Cheerio
       const $ = cheerio.load(html);
-      const results = [];
+      const results: any = [];
 
       // Strategy: Find divs that has 'supplier-card' class attribute.
       // This sucks because if class name changes, we will need to update this code.
@@ -157,92 +223,37 @@ export class TasksService {
 
       priceIndicators.each((i, el) => {
         if (results.length >= 3) return false; // Stop after finding 3. we could make this configurable
-        getDataFromNode(el);
+        this.getDataFromNode(el, $, type, results);
       });
 
       pecoCard.each((i, el) => {
-        getDataFromNode(el);
+        this.getDataFromNode(el, $, type, results);
       })
-      function getDataFromNode(el) {
-        const element = $(el);
-
-        // Traverse up parents until we find a container that has "Term Length" inside it
-        // This confirms we are inside a Rate Card
-        let card = element.closest(':has(:contains("Term Length"))');
-
-        if (card.length > 0) {
-          // Provider
-          // Providers are usually in an <img> alt attribute or a header tag (h2, h3)
-          let provider = "Unknown";
-          const providerCard = card.find('.name').first();
-
-          if (providerCard.length > 0) {
-            provider = providerCard.text();
-          }
-
-
-
-          // Price
-          // Look for the dollar amount near the "per kwh" text
-          let price = "";
-          // Get all text in the parent of the indicator (e.g., "$0.11390 per kwh")
-          const priceText = card.text();
-          const priceMatch = priceText.match(/\$\d+\.\d+/);
-          if (priceMatch) {
-            price = priceMatch[0].replace('$', '');
-          }
-
-          // Term
-          // Default to 1 if not found
-          let term = "1";
-          const cardText = card.text();
-          const termMatch = cardText.match(/(\d+\s+Months?|Month\s+to\s+Month)/i);
-          if (termMatch) {
-            term = termMatch[1];
-            // We want integer values here to do compare at a later time
-            if (term.includes('Months')) term = term.replace('Months', '').replace(" ", '');
-            else if (term.includes('Month to Month')) term = '1';
-          }
-
-          // URL
-          let provider_url = "";
-          const link = card.find('div.second > a').first();
-          if (link.length > 0) {
-            provider_url = link.attr('href');
-          } else {
-            // if no link, use google search
-            provider_url = this.getGoogleUrl(provider);
-          }
-
-          // Prevent duplicates This was happening couple of times for some reason
-          const isDuplicate = results.some(r => r.provider === provider && r.price === price);
-
-          if (!isDuplicate && provider !== "Unknown") {
-            let putilityEntity : PUtility = new PUtility()
-            putilityEntity.name = provider
-            putilityEntity.rate = price
-            putilityEntity.type = type;
-            putilityEntity.rateLength = term
-            putilityEntity.url = provider_url
-            this.putilityService.add(putilityEntity); // add entry to db
-          }
-        }
-      }
 
       await browser.close();
     }
     private async getUtilityRates() {
       // check config to see if rates should use web or csv approach
-      if (this.configService.get('API_TYPE') === 'web') {
+      try {
+        if (this.configService.get('API_TYPE') === 'web') {
           this.logger.debug('Using WEB call to get utility rates');
-      }  else {
+          if(this.configService.get('GAS_URL')) {
+            await this.fetchWeb('gas');
+          }
+          if (this.configService.get('ELECTRIC_URL')) {
+            await this.fetchWeb('electric');
+          }
+        }  else {
           this.logger.debug('Using CSV file to get utility rates');
           if(this.configService.get('GAS_URL')) {
-           await this.fetchCSV('gas');
+            await this.fetchCSV('gas');
           }
           if(this.configService.get('ELECTRIC_URL')) {
             await this.fetchCSV('electric')
           }
+        }
+      } catch (error) {
+        this.logger.error('Error in getUtilityRates:', error.message);
       }
     }
 }

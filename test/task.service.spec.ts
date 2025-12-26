@@ -526,17 +526,35 @@ describe('TasksService', () => {
   describe('getUtilityRates', () => {
     beforeEach(() => {
       jest.spyOn(service as any, 'fetchCSV').mockResolvedValue(undefined);
+      jest.spyOn(service as any, 'fetchWeb').mockResolvedValue(undefined);
     });
 
     it('should use web approach when API_TYPE is web', async () => {
       mockConfigService.get.mockImplementation((key: string) => {
         if (key === 'API_TYPE') return 'web';
+        if (key === 'GAS_URL') return 'https://example.com/gas';
         return undefined;
       });
 
       await service['getUtilityRates']();
 
       expect(mockConfigService.get).toHaveBeenCalledWith('API_TYPE');
+      expect(service['fetchCSV']).not.toHaveBeenCalled();
+      expect(service['fetchWeb']).toHaveBeenCalledWith('gas');
+    });
+
+    it('should fetch both gas and electric via web when API_TYPE is web and both URLs configured', async () => {
+      mockConfigService.get.mockImplementation((key: string) => {
+        if (key === 'API_TYPE') return 'web';
+        if (key === 'GAS_URL') return 'https://example.com/gas';
+        if (key === 'ELECTRIC_URL') return 'https://example.com/electric';
+        return undefined;
+      });
+
+      await service['getUtilityRates']();
+
+      expect(service['fetchWeb']).toHaveBeenCalledWith('gas');
+      expect(service['fetchWeb']).toHaveBeenCalledWith('electric');
       expect(service['fetchCSV']).not.toHaveBeenCalled();
     });
 
@@ -651,6 +669,116 @@ describe('TasksService', () => {
     });
   });
 
+  describe('getDataFromNode', () => {
+    let cheerio: any;
+
+    beforeEach(() => {
+      cheerio = jest.requireActual('cheerio');
+      mockPutlityService.add.mockClear();
+    });
+
+    it('should call putilityService.add when valid provider data is found', () => {
+      const htmlContent = `
+        <html>
+          <body>
+            <div class="rate-card">
+              <div class="name">Test Provider</div>
+              <div>$0.12 per kwh</div>
+              <div>Term Length: 12 Months</div>
+              <div class="second"><a href="https://example.com/provider">Details</a></div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      const $ = cheerio.load(htmlContent);
+      const element = $('.rate-card').get(0);
+      const results: any = [];
+
+      service['getDataFromNode'](element, $, 'electric', results);
+
+      expect(mockPutlityService.add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Test Provider',
+          rate: 0.12,
+          type: 'electric',
+          rateLength: 12,
+          url: 'https://example.com/provider'
+        })
+      );
+    });
+
+    it('should not call putilityService.add when provider is Unknown', () => {
+      const htmlContent = `
+        <html>
+          <body>
+            <div class="rate-card">
+              <div>$0.12 per kwh</div>
+              <div>Term Length: 12 Months</div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      const $ = cheerio.load(htmlContent);
+      const element = $('.rate-card').get(0);
+      const results: any = [];
+
+      service['getDataFromNode'](element, $, 'electric', results);
+
+      expect(mockPutlityService.add).not.toHaveBeenCalled();
+    });
+
+    it('should not call putilityService.add for duplicate entries', () => {
+      const htmlContent = `
+        <html>
+          <body>
+            <div class="rate-card">
+              <div class="name">Test Provider</div>
+              <div>$0.12 per kwh</div>
+              <div>Term Length: 12 Months</div>
+              <div class="second"><a href="https://example.com/provider">Details</a></div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      const $ = cheerio.load(htmlContent);
+      const element = $('.rate-card').get(0);
+      const results: any = [{ provider: 'Test Provider', price: '0.12' }];
+
+      service['getDataFromNode'](element, $, 'electric', results);
+
+      expect(mockPutlityService.add).not.toHaveBeenCalled();
+    });
+
+    it('should use google URL when no provider URL is found', () => {
+      const htmlContent = `
+        <html>
+          <body>
+            <div class="rate-card">
+              <div class="name">Test Provider</div>
+              <div>$0.12 per kwh</div>
+              <div>Term Length: 12 Months</div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      const $ = cheerio.load(htmlContent);
+      const element = $('.rate-card').get(0);
+      const results: any = [];
+
+      service['getDataFromNode'](element, $, 'gas', results);
+
+      expect(mockPutlityService.add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://www.google.com/search?q=Test%20Provider'
+        })
+      );
+    });
+  });
+
   describe('fetchWeb', () => {
     let mockPuppeteer: any;
     let mockCheerio: any;
@@ -697,7 +825,7 @@ describe('TasksService', () => {
     it('should navigate to gas URL when type is gas', async () => {
       const gasWebUrl = 'https://example.com/gas-rates';
       mockConfigService.get.mockImplementation((key: string) => {
-        if (key === 'GAS_WEB_URL') return gasWebUrl;
+        if (key === 'GAS_URL') return gasWebUrl;
         return undefined;
       });
 
@@ -714,7 +842,7 @@ describe('TasksService', () => {
     it('should navigate to electric URL when type is electric', async () => {
       const electricWebUrl = 'https://example.com/electric-rates';
       mockConfigService.get.mockImplementation((key: string) => {
-        if (key === 'ELECTRIC_WEB_URL') return electricWebUrl;
+        if (key === 'ELECTRIC_URL') return electricWebUrl;
         return undefined;
       });
 
@@ -733,7 +861,7 @@ describe('TasksService', () => {
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
-        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        if (key === 'GAS_URL') return 'https://example.com/gas';
         return undefined;
       });
 
@@ -750,7 +878,7 @@ describe('TasksService', () => {
 
     it('should close browser after fetching data', async () => {
       mockConfigService.get.mockImplementation((key: string) => {
-        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        if (key === 'GAS_URL') return 'https://example.com/gas';
         return undefined;
       });
 
@@ -780,7 +908,7 @@ describe('TasksService', () => {
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
-        if (key === 'ELECTRIC_WEB_URL') return 'https://example.com/electric';
+        if (key === 'ELECTRIC_URL') return 'https://example.com/electric';
         return undefined;
       });
 
@@ -814,7 +942,7 @@ describe('TasksService', () => {
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
-        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        if (key === 'GAS_URL') return 'https://example.com/gas';
         return undefined;
       });
 
@@ -842,7 +970,7 @@ describe('TasksService', () => {
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
-        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        if (key === 'GAS_URL') return 'https://example.com/gas';
         return undefined;
       });
 
@@ -885,7 +1013,7 @@ describe('TasksService', () => {
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
-        if (key === 'ELECTRIC_WEB_URL') return 'https://example.com/electric';
+        if (key === 'ELECTRIC_URL') return 'https://example.com/electric';
         return undefined;
       });
 
@@ -918,7 +1046,7 @@ describe('TasksService', () => {
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
-        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        if (key === 'GAS_URL') return 'https://example.com/gas';
         return undefined;
       });
 
@@ -937,7 +1065,7 @@ describe('TasksService', () => {
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
-        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        if (key === 'GAS_URL') return 'https://example.com/gas';
         return undefined;
       });
 
@@ -956,7 +1084,7 @@ describe('TasksService', () => {
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
-        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        if (key === 'GAS_URL') return 'https://example.com/gas';
         return undefined;
       });
 
@@ -982,7 +1110,7 @@ describe('TasksService', () => {
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
-        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        if (key === 'GAS_URL') return 'https://example.com/gas';
         return undefined;
       });
 
@@ -1001,7 +1129,7 @@ describe('TasksService', () => {
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
-        if (key === 'GAS_WEB_URL') return 'https://example.com/gas';
+        if (key === 'GAS_URL') return 'https://example.com/gas';
         return undefined;
       });
 
