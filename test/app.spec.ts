@@ -57,6 +57,12 @@ describe('AppController (e2e)', () => {
     }
   });
 
+  afterEach(async () => {
+    if (app) {
+      await app.close();
+    }
+  });
+
   it('should return 200 Healthy when hitting /health', () => {
     return request(app.getHttpServer()).get('/health').expect(200).expect('200 Healthy');
   });
