@@ -42,7 +42,7 @@ export class TasksService {
       return parseFloat(cleanStr);
     }
 
-  private getDataFromNode(el:any, $:any, type:string, results: any) {
+    private getDataFromNode(el:any, $:any, type:string, results: any) {
 
     const element = $(el);
 
@@ -105,6 +105,7 @@ export class TasksService {
         putilityEntity.rateLength = parseInt(term)
         putilityEntity.url = provider_url
         this.putilityService.add(putilityEntity);
+        results.push(putilityEntity);
       }
     }
   }
@@ -199,7 +200,7 @@ export class TasksService {
     }
 
     private async fetchWeb(type: string){
-      this.logger.debug('Fetching utility rates from web API...');
+      this.logger.debug('Fetching utility rates from web API for type:', type);
       // 1. Launch Browser
       const browser = await puppeteer.launch({ headless: true });
       const page = await browser.newPage();
@@ -222,8 +223,9 @@ export class TasksService {
       // peco card does not have supplier-card class so we add it manually
 
       priceIndicators.each((i, el) => {
-        if (results.length >= 3) return false; // Stop after finding 3. we could make this configurable
+        if (results.length > 3) return false; // Stop after finding 3. we could make this configurable
         this.getDataFromNode(el, $, type, results);
+
       });
 
       pecoCard.each((i, el) => {
