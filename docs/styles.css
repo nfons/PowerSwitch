@@ -6,15 +6,21 @@
     --accent: #14b8a6;
     --dark: #0f172a;
     --dark-secondary: #1e293b;
+    --dark-tertiary: #334155;
+    --bg-dark: #1a1f2e;
+    --bg-darker: #151923;
+    --card-dark: #1e2433;
     --light: #f8fafc;
-    --text: #334155;
-    --text-light: #64748b;
-    --border: #e2e8f0;
+    --text: #e2e8f0;
+    --text-light: #94a3b8;
+    --text-muted: #64748b;
+    --border: #2d3748;
+    --border-light: #374151;
     --success: #10b981;
-    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.5);
 }
 
 * {
@@ -32,7 +38,7 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
     line-height: 1.7;
     color: var(--text);
-    background: var(--light);
+    background: var(--bg-darker);
     overflow-x: hidden;
 }
 
@@ -88,7 +94,7 @@ header h1 {
 
 /* Navigation */
 nav {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(30, 36, 51, 0.95);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
     position: sticky;
@@ -147,7 +153,7 @@ section {
 h2 {
     font-size: clamp(2rem, 4vw, 3rem);
     margin-bottom: 48px;
-    color: var(--dark);
+    color: var(--text);
     font-weight: 800;
     letter-spacing: -0.02em;
     position: relative;
@@ -168,7 +174,7 @@ h2::after {
 h3 {
     font-size: clamp(1.3rem, 2.5vw, 1.75rem);
     margin-bottom: 16px;
-    color: var(--dark);
+    color: var(--text);
     font-weight: 700;
 }
 
@@ -182,11 +188,12 @@ p {
 #hero {
     text-align: center;
     padding: 60px 20px;
-    background: white;
+    background: var(--card-dark);
     border-radius: 24px;
     box-shadow: var(--shadow-lg);
     margin-top: -40px;
     position: relative;
+    border: 1px solid var(--border);
 }
 
 #hero h2 {
@@ -242,8 +249,8 @@ p {
 }
 
 .btn-secondary {
-    background: white;
-    color: var(--primary);
+    background: transparent;
+    color: var(--text);
     border: 2px solid var(--primary);
     box-shadow: var(--shadow-sm);
 }
@@ -257,10 +264,11 @@ p {
 
 /* Feature Grid */
 #features {
-    background: white;
+    background: var(--card-dark);
     padding: 80px 40px;
     border-radius: 24px;
     box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
 }
 
 .feature-grid {
@@ -271,7 +279,7 @@ p {
 }
 
 .feature-card {
-    background: linear-gradient(135deg, var(--light) 0%, white 100%);
+    background: var(--bg-dark);
     padding: 40px;
     border-radius: 16px;
     border: 1px solid var(--border);
@@ -328,19 +336,21 @@ p {
 
 /* Quick Start */
 #quick-start {
-    background: white;
+    background: var(--card-dark);
     padding: 80px 40px;
     border-radius: 24px;
     box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
 }
 
 .quick-start-option {
-    background: var(--light);
+    background: var(--bg-dark);
     padding: 40px;
     border-radius: 16px;
     margin-bottom: 32px;
     border-left: 5px solid var(--primary);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border);
 }
 
 .quick-start-option:hover {
@@ -375,8 +385,8 @@ code {
 }
 
 p code, li code {
-    background: var(--light);
-    color: var(--primary);
+    background: var(--bg-dark);
+    color: var(--primary-light);
     padding: 4px 8px;
     border-radius: 6px;
     border: 1px solid var(--border);
@@ -386,16 +396,17 @@ p code, li code {
 
 /* Documentation Section */
 #documentation {
-    background: white;
+    background: var(--card-dark);
     padding: 80px 40px;
     border-radius: 24px;
     box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
 }
 
 .doc-section {
     margin-bottom: 48px;
     padding: 32px;
-    background: var(--light);
+    background: var(--bg-dark);
     border-radius: 12px;
     border: 1px solid var(--border);
 }
@@ -469,11 +480,12 @@ p code, li code {
 
 /* License Section */
 #license {
-    background: white;
+    background: var(--card-dark);
     padding: 60px 40px;
     border-radius: 24px;
     box-shadow: var(--shadow-lg);
     text-align: center;
+    border: 1px solid var(--border);
 }
 
 #license h2::after {
