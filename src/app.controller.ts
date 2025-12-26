@@ -57,6 +57,16 @@ export class AppController {
     }
   }
 
+  @Get('/putility/best/:type')
+  async getBestPutlity(type: string ): Promise<PUtility | null> {
+    try {
+      return await this.putlityService.findBest();
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
   @Get('/config')
   async getConfig(){
     try {

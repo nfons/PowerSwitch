@@ -18,6 +18,10 @@ export class PutlityService {
     findOne(id: number): Promise<PUtility | null> {
         return this.PUtilityRepository.findOneBy({ id });
     }
+    // TODO
+    findBest(type: string): Promise<PUtility> | null {
+        return;
+    }
 
     async remove(id: number): Promise<void> {
         await this.PUtilityRepository.delete(id);
