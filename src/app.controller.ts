@@ -1,22 +1,34 @@
-import { Controller, Get, Put, Body, Post, Delete, Param, ParseIntPipe, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Body,
+  Post,
+  Delete,
+  Param,
+  ParseIntPipe,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { AppService } from './app.service';
-import {CreatePUtilityDto, UpdatePUtilityDto} from "./dto/putility.dto";
-import {PutlityService} from "./entities/putility/putlity.service";
-import {PUtility} from "./entities/putility/putility.entity";
-import {CurrentUtilityService} from "./entities/current_utility/current-utility.service";
+import { CreatePUtilityDto, UpdatePUtilityDto } from './dto/putility.dto';
+import { PutlityService } from './entities/putility/putlity.service';
+import { PUtility } from './entities/putility/putility.entity';
+import { CurrentUtilityService } from './entities/current_utility/current-utility.service';
 import { CurrentUtility } from './entities/current_utility/currentUtility.entity';
 import { CreateCurrentUtilityDto } from './dto/currentUtility.dto';
-import { ConfigService} from '@nestjs/config'
+import { ConfigService } from '@nestjs/config';
 
 @Controller()
 export class AppController {
   private readonly logger = new Logger(AppController.name);
-  
-  constructor(private readonly appService: AppService,
-              private readonly putlityService: PutlityService,
-              private  readonly utilityService: CurrentUtilityService,
-              private readonly configService: ConfigService) {
-  }
+
+  constructor(
+    private readonly appService: AppService,
+    private readonly putlityService: PutlityService,
+    private readonly utilityService: CurrentUtilityService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Get('/health')
   health(): string {
@@ -24,7 +36,7 @@ export class AppController {
   }
 
   @Put('/putlity')
-  async createPutlity(@Body() createPutlityDto: CreatePUtilityDto){
+  async createPutlity(@Body() createPutlityDto: CreatePUtilityDto) {
     try {
       return this.appService.createUtility(createPutlityDto);
     } catch (e) {
@@ -33,7 +45,7 @@ export class AppController {
   }
 
   @Post('/putlity')
-  async createPutlity2(@Body() updatePUtilityDto: UpdatePUtilityDto){
+  async createPutlity2(@Body() updatePUtilityDto: UpdatePUtilityDto) {
     return 'Adds Utlity Record';
   }
 
@@ -48,7 +60,9 @@ export class AppController {
   }
 
   @Get('/putlity/:id')
-  async getPutlityById(@Param('id', ParseIntPipe) id: number): Promise<PUtility | null> {
+  async getPutlityById(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<PUtility | null> {
     try {
       return await this.putlityService.findOne(id);
     } catch (e) {
@@ -58,17 +72,17 @@ export class AppController {
   }
 
   @Get('/putility/best/:type')
-  async getBestPutlity(@Param('type')type: string ): Promise<PUtility | null> {
-      const best =  await this.putlityService.findBest(type);
-      if (best === null) {
-        throw new NotFoundException('No best utility found');
-      } else {
-        return best;
-      }
+  async getBestPutlity(@Param('type') type: string): Promise<PUtility | null> {
+    const best = await this.putlityService.findBest(type);
+    if (best === null) {
+      throw new NotFoundException('No best utility found');
+    } else {
+      return best;
+    }
   }
 
   @Get('/config')
-  async getConfig(){
+  async getConfig() {
     try {
       return await this.utilityService.findAll();
     } catch (e) {
@@ -77,7 +91,9 @@ export class AppController {
   }
 
   @Get('/config/:id')
-  async getConfigById(@Param('id', ParseIntPipe) id: number): Promise<CurrentUtility | null> {
+  async getConfigById(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<CurrentUtility | null> {
     try {
       return await this.utilityService.findOne(id);
     } catch (e) {
@@ -87,14 +103,18 @@ export class AppController {
   }
 
   @Put('/config')
-  async createConfig(@Body() createCurrentUtilityDto: CreateCurrentUtilityDto): Promise<CurrentUtility> {
+  async createConfig(
+    @Body() createCurrentUtilityDto: CreateCurrentUtilityDto,
+  ): Promise<CurrentUtility> {
     try {
-      const payload = Object.assign(new CurrentUtility(), createCurrentUtilityDto);
+      const payload = Object.assign(
+        new CurrentUtility(),
+        createCurrentUtilityDto,
+      );
       return await this.utilityService.add(payload);
     } catch (e) {
       this.logger.error(e);
       throw e;
     }
   }
-
 }

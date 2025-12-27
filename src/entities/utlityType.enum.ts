@@ -1,4 +1,4 @@
 export enum utilityType {
   GAS = 'gas',
-  ELECTRIC = 'electric'
+  ELECTRIC = 'electric',
 }
