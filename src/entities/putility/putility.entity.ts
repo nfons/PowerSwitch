@@ -3,7 +3,7 @@
  *  This is stored from the API/Web call we make
  *  it is a record of the current "best" rate utility. to show to user in the FE at a later time
  */
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
 
 @Entity()
 export class PUtility {
@@ -25,4 +25,7 @@ export class PUtility {
   // Number of months this is valid for
   @Column({ nullable: true})
   rateLength: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
 }

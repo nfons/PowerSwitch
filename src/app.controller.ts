@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, Post, Delete, Param, ParseIntPipe, Logger } from '@nestjs/common';
+import { Controller, Get, Put, Body, Post, Delete, Param, ParseIntPipe, Logger, NotFoundException } from '@nestjs/common';
 import { AppService } from './app.service';
 import {CreatePUtilityDto, UpdatePUtilityDto} from "./dto/putility.dto";
 import {PutlityService} from "./entities/putility/putlity.service";
@@ -55,6 +55,16 @@ export class AppController {
       this.logger.error(e);
       throw e;
     }
+  }
+
+  @Get('/putility/best/:type')
+  async getBestPutlity(@Param('type')type: string ): Promise<PUtility | null> {
+      const best =  await this.putlityService.findBest(type);
+      if (best === null) {
+        throw new NotFoundException('No best utility found');
+      } else {
+        return best;
+      }
   }
 
   @Get('/config')
