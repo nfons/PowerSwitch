@@ -9,7 +9,7 @@ you can get these from your papowerswitch.com and pagasswitch.com
 
 In order to get the correct url, visit the site above, and then input your zip code, and select your current power delivery company (i.e PPL, PECO, etc)
 
-![zipcode](docs/zipcode.png)
+<img src="docs/img/zip" alt="drawing" width="500"/>
 
 After that, you will be taken to a page with your current rates, copy the url from that page and paste it into the `GAS_URL` or `ELECTRIC_URL` env variable.
 
