@@ -313,7 +313,8 @@ p {
 .feature-icon {
     font-size: 3.5rem;
     margin-bottom: 24px;
-    display: inline-block;
+    display: block;
+    text-align: center;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -436,6 +437,25 @@ p code, li code {
     font-weight: bold;
 }
 
+.doc-section ul ul {
+    margin-top: 12px;
+    margin-left: 20px;
+    padding-left: 12px;
+    border-left: 2px solid var(--border);
+}
+
+.doc-section ul ul li {
+    margin-bottom: 12px;
+    padding-left: 24px;
+}
+
+.doc-section ul ul li::before {
+    content: '•';
+    left: 4px;
+    color: var(--primary-light);
+    font-size: 1.2rem;
+}
+
 /* Contributing Section */
 #contributing {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 50%, var(--secondary) 100%);
@@ -502,6 +522,22 @@ a {
 
 a:hover {
     color: var(--primary-dark);
+}
+
+a.external_link::after {
+    content: '↗';
+    display: inline-block;
+    margin-left: 3px;
+    font-size: 0.7em;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+    vertical-align: super;
+    line-height: 0;
+}
+
+a.external_link:hover::after {
+    opacity: 0.8;
+    transform: translate(1px, -1px);
 }
 
 /* Footer */

@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PowerSwitch - Automated Task Scheduling</title>
+    <title>PowerSwitch - Automated PA Utility Switching</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
         <div class="container">
             <h1>⚡ PowerSwitch</h1>
-            <p class="tagline">Automated Task Scheduling Made Simple</p>
+            <p class="tagline">Automated Power Supplier Switching Made Simple</p>
         </div>
     </header>
 
@@ -26,7 +26,7 @@
     <main class="container">
         <section id="hero">
             <h2>Manage and Automate Your Utility Provider switching</h2>
-            <p>PowerSwitch is a NestJS-based application for managing and automating papower and pagas rate switching</p>
+            <p>PowerSwitch is a NestJS-based application for managing and automating <a class="external_link" href="https://www.papowerswitch.com/"> PApower </a> and <a  class="external_link" href="https://www.pagasswitch.com/"> PAgas</a> rate switching</p>
             <div class="cta-buttons">
                 <a href="#quick-start" class="btn btn-primary">Get Started</a>
                 <a href="https://github.com/nfons/PowerSwitch" class="btn btn-secondary">View on GitHub</a>
@@ -52,9 +52,9 @@
                     <p>Full Docker support for easy deployment</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">📝</div>
-                    <h3>TypeScript</h3>
-                    <p>Built with TypeScript for type safety</p>
+                    <div class="feature-icon">🔔</div>
+                    <h3>Alerts (SOON)</h3>
+                    <p>When new rates are found, it will alert you via email or push notification</p>
                 </div>
             </div>
         </section>
@@ -103,9 +103,10 @@ ELECTRIC_URL=[either csv url or web url. see Config option section for more info
 
             <div class="doc-section">
                 <h3>Configuration Options</h3>
+                <p>Visit <a class="external_link" href="https://www.pagasswitch.com/">pagasswitch.com</a> and <a class="external_link" href="https://www.papowerswitch.com/">papowerswitch.com</a> to get your available providers </p>
                 <ul>
-                    <li><strong>If you default to CSV, you will need to get the CSV link for each utility type <span class="subtext"> right click > copy link</span></strong> <img src="img/csv.png" /></li>
-                    <li><strong>If using WEB, make sure to sort by price and set the below filters  <span class="subtext">copy url from url bar</span></strong></li>
+                    <li><strong>If you default to CSV, you will need to get the CSV link for each utility type (gas, electric) <span class="subtext"> right click > copy link</span></strong> <img src="img/csv.png" /></li>
+                    <li><strong>If using WEB, make sure to sort by price and set the below filters  <span class="subtext">then copy url from url bar</span></strong></li>
                         <ul>
                             <li><img src="img/WEB.png"></li>
                             <li><img src="img/web2.png"></li>
