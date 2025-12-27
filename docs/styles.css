@@ -543,6 +543,11 @@ footer a:hover {
     }
 }
 
+.subtext {
+    color: orange;
+    opacity: 25%;
+}
+
 /* Selection styling */
 ::selection {
     background: var(--primary-light);

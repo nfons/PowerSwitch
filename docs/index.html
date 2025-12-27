@@ -93,19 +93,19 @@ npm run start:dev</code></pre>
 
             <div class="doc-section">
                 <h3>Configuration</h3>
-                <p>Edit the <code>.env</code> file to customize your setup:</p>
-                <pre><code>DB_TABLE=powertable
-CRON_TIME=* * * * *</code></pre>
+                <p>Edit the <code>.env</code> file to customize your setup with your own `[values]` <span class="subtext">(or rename sample.env to .env) </span> </p>
+                <pre><code>DB_TABLE=[DB TABLE NAME]
+CRON_TIME=[any valid cron, i.e * * * * *]
+API_TYPE=[either 'web' or 'csv' defaults to csv if left empty]
+GAS_URL=[either csv url or web url. see Config option section for more info]
+ELECTRIC_URL=[either csv url or web url. see Config option section for more info]</code></pre>
             </div>
 
             <div class="doc-section">
-                <h3>Available Scripts</h3>
+                <h3>Configuration Options</h3>
                 <ul>
-                    <li><code>npm run start:dev</code> - Start development server with hot reload</li>
-                    <li><code>npm run build</code> - Build the project</li>
-                    <li><code>npm run test</code> - Run tests</li>
-                    <li><code>npm run lint</code> - Lint code</li>
-                    <li><code>npm run format</code> - Format code with Prettier</li>
+                    <li><strong>If you default to CSV, you will need to get the CSV link for each utility type <span class="subtext"> right click > copy link</span></strong> <img src="img/csv.png" /></li>
+                    <li><strong>If using WEB, make sure to sort by price <span class="subtext">copy url from url bar</span> <img src="img/WEB.png"></strong></li>
                 </ul>
             </div>
 
