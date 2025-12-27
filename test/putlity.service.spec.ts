@@ -37,9 +37,7 @@ describe('PutlityService', () => {
     }).compile();
 
     service = module.get<PutlityService>(PutlityService);
-    repository = module.get<Repository<PUtility>>(
-      getRepositoryToken(PUtility),
-    );
+    repository = module.get<Repository<PUtility>>(getRepositoryToken(PUtility));
   });
 
   afterEach(() => {
@@ -142,7 +140,9 @@ describe('PutlityService', () => {
       const result = await service.findBest('electric');
 
       expect(result).toEqual(utilities[1]); // Provider B has the lowest rate (0.12)
-      expect(mockRepository.find).toHaveBeenCalledWith({ where: { type: 'electric' } });
+      expect(mockRepository.find).toHaveBeenCalledWith({
+        where: { type: 'electric' },
+      });
     });
 
     it('should filter out expired records', async () => {
@@ -151,7 +151,7 @@ describe('PutlityService', () => {
         {
           id: 1,
           name: 'Provider A',
-          rate: 0.10, // Lowest rate but expired
+          rate: 0.1, // Lowest rate but expired
           type: 'electric',
           url: 'https://example.com/a',
           rateLength: 1,
@@ -181,7 +181,9 @@ describe('PutlityService', () => {
       const result = await service.findBest('gas');
 
       expect(result).toBeNull();
-      expect(mockRepository.find).toHaveBeenCalledWith({ where: { type: 'gas' } });
+      expect(mockRepository.find).toHaveBeenCalledWith({
+        where: { type: 'gas' },
+      });
     });
 
     it('should return null when all records are expired', async () => {

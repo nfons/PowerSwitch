@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-import { utilityType }  from  '../../entities/utlityType.enum';
+import { utilityType } from '../../entities/utlityType.enum';
 
 @Entity()
 export class CurrentUtility {
