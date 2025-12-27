@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration - PowerSwitch</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>⚙️ Configuration</h1>
+            <p class="tagline">Setup Guide for PowerSwitch</p>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <a href="index.html">Home</a>
+            <a href="index.html#features">Features</a>
+            <a href="index.html#quick-start">Quick Start</a>
+            <a href="configuration.html">Configuration</a>
+            <a href="https://github.com/nfons/PowerSwitch" class="external_link">GitHub</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section id="configuration-intro">
+            <h2>Environment Configuration</h2>
+            <p>PowerSwitch uses environment variables for configuration. Edit the <code>.env</code> file to customize your setup with your own values (or rename <code>sample.env</code> to <code>.env</code>).</p>
+        </section>
+
+        <section id="required-config">
+            <h2>Required Configuration</h2>
+
+            <div class="doc-section">
+                <h3>Gas and Electric URLs</h3>
+                <p>You can get these from <a href="https://papowerswitch.com" class="external_link">papowerswitch.com</a> and <a href="https://pagasswitch.com" class="external_link">pagasswitch.com</a></p>
+
+                <ul>
+                    <li><strong>GAS_URL:</strong> The URL for fetching gas power usage data.</li>
+                    <li><strong>ELECTRIC_URL:</strong> The URL for fetching electric power usage data.</li>
+                </ul>
+
+                <h4>How to get the correct URL:</h4>
+                <ol>
+                    <li>Visit <a href="https://papowerswitch.com" class="external_link">papowerswitch.com</a> or <a href="https://pagasswitch.com" class="external_link">pagasswitch.com</a></li>
+                    <li>Input your zip code</li>
+                    <li>Select your current power delivery company (e.g., PPL, PECO, etc.)</li>
+                </ol>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <img src="images/zip.png" alt="Zip code input example" style="max-width: 500px; width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);">
+                </div>
+
+                <p>After that, you will be taken to a page with your current rates. Copy the URL from that page and paste it into the <code>GAS_URL</code> or <code>ELECTRIC_URL</code> environment variable.</p>
+
+                <div class="note">
+                    <strong>Note:</strong> If using "web" as API_TYPE, make sure to filter <code>rate options</code> and <code>Terms and Conditions</code> to filter out bad providers.
+                </div>
+            </div>
+        </section>
+
+        <section id="optional-config">
+            <h2>Optional Configuration</h2>
+
+            <div class="doc-section">
+                <h3>Database Configuration</h3>
+                <ul>
+                    <li>
+                        <strong>DB_TABLE:</strong> The name of the database table to store power usage data.
+                        <ul>
+                            <li>Default: <code>powertable.db</code></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="doc-section">
+                <h3>Scheduling Configuration</h3>
+                <ul>
+                    <li>
+                        <strong>CRON_TIME:</strong> The cron schedule for running the power usage check.
+                        <ul>
+                            <li>Default: <code>* * * * *</code> (every minute)</li>
+                            <li>Format: Minute Hour Day Month Weekday</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="doc-section">
+                <h3>API Configuration</h3>
+                <ul>
+                    <li>
+                        <strong>API_TYPE:</strong> The type of API to use for fetching power usage data.
+                        <ul>
+                            <li>Default: <code>csv</code></li>
+                            <li>Options: <code>csv</code> or <code>web</code></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>CSV API Type:</h4>
+                <p>You will need to get the CSV link for each utility type:</p>
+                <ul>
+                    <li>Right click on the CSV download link</li>
+                    <li>Select "Copy link"</li>
+                </ul>
+                <div style="text-align: center; margin: 20px 0;">
+                    <img src="images/csv.png" alt="CSV link example" style="max-width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);">
+                </div>
+
+                <h4>Web API Type:</h4>
+                <p>Make sure to sort by price and set the below filters, then copy the URL from the address bar:</p>
+                <div style="text-align: center; margin: 20px 0;">
+                    <img src="images/WEB.png" alt="Web filter example 1" style="max-width: 100%; border-radius: 12px; box-shadow: var(--shadow-md); margin-bottom: 20px;">
+                    <img src="images/web2.png" alt="Web filter example 2" style="max-width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);">
+                </div>
+            </div>
+        </section>
+
+        <section id="example-config">
+            <h2>Example Configuration</h2>
+            <div class="doc-section">
+                <p>Here's an example <code>.env</code> file with all available options:</p>
+                <pre><code># Required
+GAS_URL=https://pagasswitch.com/your-gas-url
+ELECTRIC_URL=https://papowerswitch.com/your-electric-url
+
+# Optional
+DB_TABLE=powertable.db
+CRON_TIME=0 */6 * * *
+API_TYPE=csv</code></pre>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 PowerSwitch. Licensed under GPLv3.</p>
+            <p>
+                <a href="https://github.com/nfons/PowerSwitch">GitHub</a> |
+                <a href="https://github.com/nfons/PowerSwitch/issues">Issues</a> |
+                <a href="https://github.com/nfons/PowerSwitch/blob/main/README.md">Documentation</a>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>
