@@ -548,6 +548,9 @@ footer a:hover {
     opacity: 25%;
 }
 
+ul > li > img {
+    max-width: 100%;
+}
 /* Selection styling */
 ::selection {
     background: var(--primary-light);
