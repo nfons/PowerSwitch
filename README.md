@@ -43,6 +43,7 @@ cp sample.env .env
 ```
 
 **Configuration:**
+
 See [Configuration](CONFIGURATION.md) for detailed configuration options.
 Edit the `.env` file to customize your setup:
 
