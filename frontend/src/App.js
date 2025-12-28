@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFireFlameSimple, faBoltLightning, faPlus, faTimes, faTowerCell } from '@fortawesome/free-solid-svg-icons';
+import { faFireFlameSimple, faBoltLightning, faPlus, faTimes, faTowerCell, faCircleXmark, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import './App.css';
 
 const initialFormState = {
@@ -23,12 +23,16 @@ function App() {
   const [errorElectric, setErrorElectric] = useState(null);
 
   // Modal and form state
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [configs, setConfigs] = useState([]);
   const [loadingConfigs, setLoadingConfigs] = useState(true);
+
+  // store selected utility
+  const [selectedUtility, setSelectedUtility] = useState(null);
 
   const handleChange = (field) => (event) => {
     setForm((prev) => ({
@@ -102,6 +106,23 @@ function App() {
     }
   };
 
+  const saveConfigs = async (payload) =>{
+    const response = await fetch(`${API_HOST}/api/config`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    // hopefully this never triggers...since i control both ends
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || response.statusText || 'Server rejected the Current Rate');
+    }
+
+    return response
+  }
   useEffect(() => {
     fetchBestGas();
     fetchBestElectric();
@@ -110,7 +131,35 @@ function App() {
 
   const handleRateClick = async (putility) => {
     console.log('Clicked rate:', putility);
+    setShowConfirmModal(true);
+    setSelectedUtility(putility);
   }
+
+  const rateClickSelected = async () =>{
+    console.log(selectedUtility)
+
+    //convert putility to cutility
+    try {
+
+      // for duration its current date + ratelength months added we can get same logic as best rate for this
+      const expirationDate = new Date();
+      expirationDate.setMonth(expirationDate.getMonth() + selectedUtility.rateLength);
+
+      const payload = {
+        name: selectedUtility.name,
+        type: form.type,
+        duration: expirationDate.toISOString(),
+        rate: selectedUtility.rate,
+      };
+      saveConfigs(payload);
+    }catch (e) {
+      console.error('Error converting putility to cutility:', e);
+    } finally {
+      setShowConfirmModal(false);
+      fetchConfigs(); // Reload configs after successful save
+    }
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault(); //blcok basic js
 
@@ -144,20 +193,7 @@ function App() {
         payload.duration = new Date(form.duration).toISOString();
       }
 
-      const response = await fetch(`${API_HOST}/api/config`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      // hopefully this never triggers...since i control both ends
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || response.statusText || 'Server rejected the Current Rate');
-      }
-
+      saveConfigs(payload);
       setStatus('success');
       setForm(initialFormState);
       fetchConfigs(); // Reload configs after successful save
@@ -305,7 +341,22 @@ function App() {
         </section>
       </div>
 
-      {/* Modal for adding utility */}
+      {showConfirmModal && (
+        <div className="modal-overlay" onClick={() => setShowConfirmModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Do you want to save this utility as your current utility?</h2>
+              <button className="modal-close" onClick={() => setShowConfirmModal(false)}>
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className="type-selection">
+              <button type="button"  className="type-button" onClick={()=>setShowConfirmModal(false)} ><FontAwesomeIcon className="type-icon" icon={faCircleXmark} /></button>
+              <button type="button"  className="type-button" onClick={rateClickSelected} ><FontAwesomeIcon className="type-icon" icon={faCircleCheck}/></button>
+          </div>
+          </div>
+        </div>
+      )}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
