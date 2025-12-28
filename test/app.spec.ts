@@ -8,15 +8,19 @@ import { PUtility } from '../src/entities/putility/putility.entity';
 import { CurrentUtility } from '../src/entities/current_utility/currentUtility.entity';
 import { PutlityService } from '../src/entities/putility/putlity.service';
 import { CurrentUtilityService } from '../src/entities/current_utility/current-utility.service';
+import { TasksService } from '../src/task.service';
+
+
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
   let putlityService: PutlityService;
   let utilityConfigService: CurrentUtilityService;
-  let seededUtilities: PUtility[] = [];
-  let seededConfigs: CurrentUtility[] = [];
+  let mockTasksService: { onModuleInit: jest.Mock };
 
   beforeEach(async () => {
+    mockTasksService = { onModuleInit: jest.fn() };
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
@@ -29,6 +33,8 @@ describe('AppController (e2e)', () => {
         AppModule,
       ],
     })
+      .overrideProvider(TasksService)
+      .useValue(mockTasksService)
       .overrideModule(AppModule)
       .useModule(AppModule)
       .compile();
@@ -62,7 +68,7 @@ describe('AppController (e2e)', () => {
     }
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     if (app) {
       await app.close();
     }
