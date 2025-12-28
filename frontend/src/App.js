@@ -201,7 +201,7 @@ function App() {
       saveConfigs(payload);
       setStatus('success');
       setForm(initialFormState);
-      fetchConfigs(); // Reload configs after successful save
+      await fetchConfigs(); // Reload configs after successful save
 
       // Close modal after 1.5 seconds
       setTimeout(() => {
