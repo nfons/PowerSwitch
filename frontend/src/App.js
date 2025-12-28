@@ -152,7 +152,7 @@ function App() {
 
       const payload = {
         name: selectedUtility.name,
-        type: form.type,
+        type: selectedUtility.type,
         duration: expirationDate.toISOString(),
         rate: selectedUtility.rate,
       };
