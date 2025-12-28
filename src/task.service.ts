@@ -97,6 +97,10 @@ export class TasksService {
         // if no link, use google search
         provider_url = this.getGoogleUrl(provider);
       }
+      // for peco, we just need to link to peco website
+      if (provider.includes('PECO')) {
+        provider_url = 'https://www.peco.com/';
+      }
 
       // Prevent duplicates This was happening couple of times for some reason
       const isDuplicate = results.some(
