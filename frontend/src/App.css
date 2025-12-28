@@ -494,6 +494,13 @@ button[type="submit"]:disabled {
   border-radius: 12px;
   padding: 20px;
   border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.utility-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+  border-color: #667eea;
 }
 
 .utility-header {

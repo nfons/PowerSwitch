@@ -108,6 +108,9 @@ function App() {
     fetchConfigs();
   }, []);
 
+  const handleRateClick = async (putility) => {
+    console.log('Clicked rate:', putility);
+  }
   const handleSubmit = async (event) => {
     event.preventDefault(); //blcok basic js
 
@@ -187,7 +190,7 @@ function App() {
     }
 
     return (
-      <div className="utility-card">
+      <div className="utility-card" onClick={() => handleRateClick(utility)}>
         <div className="utility-header">
           <FontAwesomeIcon icon={icon} className={`utility-icon ${typeClass}`} />
           <h3>{utility.name}</h3>
