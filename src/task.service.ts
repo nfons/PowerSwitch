@@ -37,6 +37,9 @@ export class TasksService {
     job.start();
   }
 
+  onModuleInit(){
+    this.getUtilityRates();
+  }
   private getGoogleUrl(term: string) {
     return `https://www.google.com/search?q=${encodeURIComponent(term)}`;
   }

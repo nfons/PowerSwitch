@@ -88,6 +88,9 @@ describe('TasksService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    jest
+      .spyOn(TasksService.prototype, 'onModuleInit')
+      .mockImplementation(() => undefined);
 
     testingModule = await Test.createTestingModule({
       providers: [
