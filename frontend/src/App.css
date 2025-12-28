@@ -345,7 +345,7 @@ button[type="submit"]:disabled {
   color: #92400e;
 }
 
-.config-type.electricity {
+.config-type.electric {
   background: #dbeafe;
   color: #1e40af;
 }
@@ -484,7 +484,7 @@ button[type="submit"]:disabled {
   color: #f59e0b;
 }
 
-.section-icon.electricity {
+.section-icon.electric {
   color: #3b82f6;
 }
 
@@ -520,7 +520,7 @@ button[type="submit"]:disabled {
   color: #f59e0b;
 }
 
-.utility-icon.electricity {
+.utility-icon.electric {
   color: #3b82f6;
 }
 
@@ -577,7 +577,7 @@ button[type="submit"]:disabled {
   color: #92400e;
 }
 
-.utility-type.electricity {
+.utility-type.electric {
   background: #dbeafe;
   color: #1e40af;
 }

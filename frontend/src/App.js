@@ -156,7 +156,7 @@ function App() {
         duration: expirationDate.toISOString(),
         rate: selectedUtility.rate,
       };
-      saveConfigs(payload);
+      await saveConfigs(payload);
     }catch (e) {
       console.error('Error converting putility to cutility:', e);
     } finally {
@@ -295,10 +295,10 @@ function App() {
 
             <div className="rate-card-wrapper">
               <h2>
-                <FontAwesomeIcon icon={faBoltLightning} className="section-icon electricity" />
+                <FontAwesomeIcon icon={faBoltLightning} className="section-icon electric" />
                 Best Electric Rate
               </h2>
-              {renderUtilityCard(bestElectric, loadingElectric, errorElectric, faBoltLightning, 'electricity')}
+              {renderUtilityCard(bestElectric, loadingElectric, errorElectric, faBoltLightning, 'electric')}
             </div>
           </div>
         </section>
@@ -404,12 +404,12 @@ function App() {
                   </button>
                   <button
                     type="button"
-                    className={`type-button ${form.type === 'Electricity' ? 'active' : ''}`}
-                    onClick={() => handleTypeSelect('Electricity')}
+                    className={`type-button ${form.type === 'Electric' ? 'active' : ''}`}
+                    onClick={() => handleTypeSelect('Electric')}
                     disabled={isSubmitting}
                   >
                     <FontAwesomeIcon icon={faBoltLightning} className="type-icon" />
-                    <span>Electricity</span>
+                    <span>Electric</span>
                   </button>
                 </div>
               </div>
