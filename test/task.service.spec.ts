@@ -1054,6 +1054,62 @@ describe('TasksService', () => {
       expect(mockBrowser.close).toHaveBeenCalled();
     });
 
+    it('should use peco.com URL for PECO provider', () => {
+      const htmlContent = `
+        <html>
+          <body>
+            <div class="rate-card">
+              <div class="name">PECO</div>
+              <div>$0.10 per kwh</div>
+              <div>Term Length: 12 Months</div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      const cheerio = jest.requireActual('cheerio');
+      const $ = cheerio.load(htmlContent);
+      const element = $('.rate-card').get(0);
+      const results: any = [];
+
+      service['getDataFromNode'](element, $, 'electric', results);
+
+      expect(mockPutlityService.add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'PECO',
+          url: 'https://www.peco.com/',
+        }),
+      );
+    });
+
+    it('should use peco.com URL for provider with PECO in name', () => {
+      const htmlContent = `
+        <html>
+          <body>
+            <div class="rate-card">
+              <div class="name">PECO Energy Company</div>
+              <div>$0.09 per kwh</div>
+              <div>Term Length: 6 Months</div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      const cheerio = jest.requireActual('cheerio');
+      const $ = cheerio.load(htmlContent);
+      const element = $('.rate-card').get(0);
+      const results: any = [];
+
+      service['getDataFromNode'](element, $, 'electric', results);
+
+      expect(mockPutlityService.add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'PECO Energy Company',
+          url: 'https://www.peco.com/',
+        }),
+      );
+    });
+
     it('should extract price from dollar amount regex', async () => {
       const htmlContent =
         '<html><body><div class="supplier-card">Rate: $0.15390 per kwh</div></body></html>';
