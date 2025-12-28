@@ -18,5 +18,5 @@ After that, you will be taken to a page with your current rates, copy the url fr
 
 ## Optional ENV config params
 - `DB_TABLE`: The name of the database table to store power usage data. Default is `powertable.db`.
-- `CRON_TIME`: The cron schedule for running the power usage check. Default is `* * * * *` (every minute).
+- `CRON_TIME`: The cron schedule for running the power usage check. Default is `0 0 10 * *` (once a month on the 10th day of the month).
 - `API_TYPE`: The type of API to use for fetching power usage data. Default is `csv`.

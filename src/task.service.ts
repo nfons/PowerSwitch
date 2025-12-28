@@ -18,13 +18,14 @@ export class TasksService {
     0 12 1 * *
     Utility Rates do not change often, we can save API calls by running this task once a month
      */
-  public schedule: string = CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON;
+  public schedule: string = '0 0 10 * *';
 
   constructor(
     private readonly configService: ConfigService,
     private schedulerRegistry: SchedulerRegistry,
     private putilityService: PutlityService,
   ) {
+
     this.logger = new Logger(TasksService.name);
     const schedule =
       this.configService.get<string>('CRON_TIME') || this.schedule;
@@ -225,7 +226,7 @@ export class TasksService {
   }
 
   private async fetchWeb(type: string) {
-    this.logger.debug('Fetching utility rates from web API for type:', type);
+    this.logger.debug('Fetching utility rates from web API for type:'+ type);
     // 1. Launch Browser
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
@@ -261,7 +262,7 @@ export class TasksService {
 
     await browser.close();
   }
-  private async getUtilityRates() {
+  public async getUtilityRates() {
     // check config to see if rates should use web or csv approach
     try {
       if (this.configService.get('API_TYPE') === 'web') {

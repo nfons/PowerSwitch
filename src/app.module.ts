@@ -41,5 +41,8 @@ const dbConfig = TypeOrmModule.forRootAsync({
   providers: [AppService, TasksService],
 })
 export class AppModule {
-  constructor(private dataSource: DataSource) {}
+  constructor(private dataSource: DataSource, private tasksService: TasksService) {
+    // at startup run the utility fetching at least one time
+    this.tasksService.getUtilityRates();
+  }
 }

@@ -49,7 +49,7 @@ Edit the `.env` file to customize your setup:
 
 ```env
 DB_TABLE=powertable.db
-CRON_TIME=* * * * *
+CRON_TIME=0 0 10 * *
 ELECTRIC_URL='https://www.papowerswitch.com/'
 API_TYPE=web
 GAS_URL='someurl.com'

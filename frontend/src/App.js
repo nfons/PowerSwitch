@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFireFlameSimple, faBoltLightning } from '@fortawesome/free-solid-svg-icons';
+import { faFireFlameSimple, faBoltLightning, faPlus, faTimes, faTowerCell } from '@fortawesome/free-solid-svg-icons';
 import './App.css';
 
 const initialFormState = {
@@ -11,6 +11,16 @@ const initialFormState = {
 };
 
 function App() {
+  // Best rates state
+  const [bestGas, setBestGas] = useState(null);
+  const [bestElectric, setBestElectric] = useState(null);
+  const [loadingGas, setLoadingGas] = useState(true);
+  const [loadingElectric, setLoadingElectric] = useState(true);
+  const [errorGas, setErrorGas] = useState(null);
+  const [errorElectric, setErrorElectric] = useState(null);
+
+  // Modal and form state
+  const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -34,6 +44,44 @@ function App() {
   const canSubmit = form.name.trim() && form.type.trim() && form.rate !== '';
   const isSubmitting = status === 'loading';
 
+  // Fetch best gas rate
+  const fetchBestGas = async () => {
+    try {
+      setLoadingGas(true);
+      setErrorGas(null);
+      const response = await fetch('/api/putility/best/gas');
+      if (!response.ok) {
+        throw new Error('Failed to fetch best gas rate');
+      }
+      const data = await response.json();
+      setBestGas(data);
+    } catch (error) {
+      console.error('Error fetching best gas rate:', error);
+      setErrorGas(error.message);
+    } finally {
+      setLoadingGas(false); //Will make this prettier later
+    }
+  };
+
+  // Fetch best electric rate
+  const fetchBestElectric = async () => {
+    try {
+      setLoadingElectric(true);
+      setErrorElectric(null);
+      const response = await fetch('/api/putility/best/electric');
+      if (!response.ok) {
+        throw new Error('Failed to fetch best electric rate');
+      }
+      const data = await response.json();
+      setBestElectric(data);
+    } catch (error) {
+      console.error('Error fetching best electric rate:', error);
+      setErrorElectric(error.message);
+    } finally {
+      setLoadingElectric(false); //Will make this prettier later
+    }
+  };
+
   // Calls the fetch config endpoint to get all saved configs.
   const fetchConfigs = async () => {
     try {
@@ -52,6 +100,8 @@ function App() {
   };
 
   useEffect(() => {
+    fetchBestGas();
+    fetchBestElectric();
     fetchConfigs();
   }, []);
 
@@ -106,6 +156,12 @@ function App() {
       setStatus('success');
       setForm(initialFormState);
       fetchConfigs(); // Reload configs after successful save
+
+      // Close modal after 1.5 seconds
+      setTimeout(() => {
+        setShowModal(false);
+        setStatus('idle');
+      }, 1500);
     } catch (error) {
       setStatus('error');
       setErrorMessage(
@@ -115,80 +171,90 @@ function App() {
     }
   };
 
+  const renderUtilityCard = (utility, loading, error, icon, typeClass) => {
+    if (loading) {
+      return <div className="loading">Loading...</div>;
+    }
+
+    if (error) {
+      return <div className="error-state">Error: {error}</div>;
+    }
+
+    if (!utility) {
+      return <div className="empty-state">No data available</div>;
+    }
+
+    return (
+      <div className="utility-card">
+        <div className="utility-header">
+          <FontAwesomeIcon icon={icon} className={`utility-icon ${typeClass}`} />
+          <h3>{utility.name}</h3>
+        </div>
+        <div className="utility-details">
+          <div className="utility-row">
+            <span className="utility-label">Type:</span>
+            <span className={`utility-type ${typeClass}`}>{utility.type}</span>
+          </div>
+          <div className="utility-row">
+            <span className="utility-label">Rate:</span>
+            <span className="utility-value rate">${Number(utility.rate).toFixed(5)}</span>
+          </div>
+          {utility.url && (
+            <div className="utility-row">
+              <span className="utility-label">URL:</span>
+              <a href={utility.url} target="_blank" rel="noopener noreferrer" className="utility-link">
+                View Details
+              </a>
+            </div>
+          )}
+          {utility.rateLength && (
+            <div className="utility-row">
+              <span className="utility-label">Valid For:</span>
+              <span className="utility-value">{utility.rateLength} months</span>
+            </div>
+          )}
+          {utility.createdAt && (
+            <div className="utility-row">
+              <span className="utility-label">Last Updated:</span>
+              <span className="utility-value">
+                {new Date(utility.createdAt).toLocaleString()}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <main className="App">
       <div className="app-container">
-        <section className="form-card">
-          <h1>Add Current Utility</h1>
-          <form onSubmit={handleSubmit}>
-          <label>
-            Current Utility Name
-            <input
-              type="text"
-              value={form.name}
-              onChange={handleChange('name')}
-              disabled={isSubmitting}
-              required
-            />
-          </label>
-          <div className="type-selection">
-            <label>Utility Type</label>
-            <div className="type-buttons">
-              <button
-                type="button"
-                className={`type-button ${form.type === 'Gas' ? 'active' : ''}`}
-                onClick={() => handleTypeSelect('Gas')}
-                disabled={isSubmitting}
-              >
-                <FontAwesomeIcon icon={faFireFlameSimple} className="type-icon" />
-                <span>Gas</span>
-              </button>
-              <button
-                type="button"
-                className={`type-button ${form.type === 'Electricity' ? 'active' : ''}`}
-                onClick={() => handleTypeSelect('Electricity')}
-                disabled={isSubmitting}
-              >
-                <FontAwesomeIcon icon={faBoltLightning} className="type-icon" />
-                <span>Electricity</span>
-              </button>
+        <div className="header-section">
+          <h1><FontAwesomeIcon icon={faTowerCell} /> Power Switch</h1>
+          <button className="add-utility-button" onClick={() => setShowModal(true)}>
+            <FontAwesomeIcon icon={faPlus} />
+            <span>Add Current Utility</span>
+          </button>
+        </div>
+
+        <section className="best-rates-section">
+          <div className="best-rates-grid">
+            <div className="rate-card-wrapper">
+              <h2>
+                <FontAwesomeIcon icon={faFireFlameSimple} className="section-icon gas" />
+                Best Gas Rate
+              </h2>
+              {renderUtilityCard(bestGas, loadingGas, errorGas, faFireFlameSimple, 'gas')}
+            </div>
+
+            <div className="rate-card-wrapper">
+              <h2>
+                <FontAwesomeIcon icon={faBoltLightning} className="section-icon electricity" />
+                Best Electric Rate
+              </h2>
+              {renderUtilityCard(bestElectric, loadingElectric, errorElectric, faBoltLightning, 'electricity')}
             </div>
           </div>
-          <label>
-            Rate per {form.type === 'Gas' ? '(ccf)' : '(kWh)'}
-            <div className="input-with-prefix">
-              <span className="input-prefix">$</span>
-              <input
-                type="number"
-                min="0"
-                step="0.00001"
-                value={form.rate}
-                onChange={handleChange('rate')}
-                disabled={isSubmitting}
-                required
-                className="input-with-prefix-field"
-              />
-            </div>
-          </label>
-          <label>
-            Duration (how long is this rate good for)
-            <input
-              type="datetime-local"
-              value={form.duration}
-              onChange={handleChange('duration')}
-              disabled={isSubmitting}
-            />
-          </label>
-          <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving…' : 'Save Current Utility Record'}
-          </button>
-        </form>
-          {status === 'success' && <p className="status success">Current Rate stored successfully.</p>}
-          {status === 'error' && (
-            <p className="status error">
-              {errorMessage || 'Unable to save Current Rate; check console for more details.'}
-            </p>
-          )}
         </section>
 
         <section className="configs-section">
@@ -196,7 +262,7 @@ function App() {
           {loadingConfigs ? (
             <div className="loading">Loading configurations...</div>
           ) : configs.length === 0 ? (
-            <div className="empty-state">No configurations saved yet. Create your first one above!</div>
+            <div className="empty-state">No configurations saved yet. Add your first one using the button above!</div>
           ) : (
             <div className="configs-grid">
               {configs.map((config) => (
@@ -233,6 +299,91 @@ function App() {
           )}
         </section>
       </div>
+
+      {/* Modal for adding utility */}
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Add Current Utility</h2>
+              <button className="modal-close" onClick={() => setShowModal(false)}>
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              <label>
+                Current Utility Name
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={handleChange('name')}
+                  disabled={isSubmitting}
+                  required
+                />
+              </label>
+              <div className="type-selection">
+                <label>Utility Type</label>
+                <div className="type-buttons">
+                  <button
+                    type="button"
+                    className={`type-button ${form.type === 'Gas' ? 'active' : ''}`}
+                    onClick={() => handleTypeSelect('Gas')}
+                    disabled={isSubmitting}
+                  >
+                    <FontAwesomeIcon icon={faFireFlameSimple} className="type-icon" />
+                    <span>Gas</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`type-button ${form.type === 'Electricity' ? 'active' : ''}`}
+                    onClick={() => handleTypeSelect('Electricity')}
+                    disabled={isSubmitting}
+                  >
+                    <FontAwesomeIcon icon={faBoltLightning} className="type-icon" />
+                    <span>Electricity</span>
+                  </button>
+                </div>
+              </div>
+              <label>
+                Rate per {form.type === 'Gas' ? '(ccf)' : '(kWh)'}
+                <div className="input-with-prefix">
+                  <span className="input-prefix">$</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.00001"
+                    value={form.rate}
+                    onChange={handleChange('rate')}
+                    disabled={isSubmitting}
+                    required
+                    className="input-with-prefix-field"
+                  />
+                </div>
+              </label>
+              <label>
+                Duration (how long is this rate good for)
+                <input
+                  type="datetime-local"
+                  value={form.duration}
+                  onChange={handleChange('duration')}
+                  disabled={isSubmitting}
+                />
+              </label>
+              <button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving…' : 'Save Current Utility Record'}
+              </button>
+            </form>
+
+            {status === 'success' && <p className="status success">Current Rate stored successfully.</p>}
+            {status === 'error' && (
+              <p className="status error">
+                {errorMessage || 'Unable to save Current Rate; check console for more details.'}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }
