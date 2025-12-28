@@ -10,6 +10,9 @@ const initialFormState = {
   duration: '',
 };
 
+// Get API host from environment variable, default to empty string for relative URLs
+const API_HOST = process.env.REACT_APP_API_HOST || '';
+
 function App() {
   // Best rates state
   const [bestGas, setBestGas] = useState(null);
@@ -49,7 +52,7 @@ function App() {
     try {
       setLoadingGas(true);
       setErrorGas(null);
-      const response = await fetch('/api/putility/best/gas');
+      const response = await fetch(`${API_HOST}/api/putility/best/gas`);
       if (!response.ok) {
         throw new Error('Failed to fetch best gas rate');
       }
@@ -68,7 +71,7 @@ function App() {
     try {
       setLoadingElectric(true);
       setErrorElectric(null);
-      const response = await fetch('/api/putility/best/electric');
+      const response = await fetch(`${API_HOST}/api/putility/best/electric`);
       if (!response.ok) {
         throw new Error('Failed to fetch best electric rate');
       }
@@ -86,7 +89,7 @@ function App() {
   const fetchConfigs = async () => {
     try {
       setLoadingConfigs(true);
-      const response = await fetch('/api/config');
+      const response = await fetch(`${API_HOST}/api/config`);
       if (!response.ok) {
         throw new Error('Failed to fetch configs');
       }
@@ -138,8 +141,7 @@ function App() {
         payload.duration = new Date(form.duration).toISOString();
       }
 
-      // Its hard coded for now...but i might have to change this later to be env based or something
-      const response = await fetch('/api/config', {
+      const response = await fetch(`${API_HOST}/api/config`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
