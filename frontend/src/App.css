@@ -646,6 +646,66 @@ button[type="submit"]:disabled {
   color: #1a202c;
 }
 
+.modal-description {
+  font-size: 16px;
+  color: #4a5568;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.confirm-btn {
+  flex: 1;
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.confirm-btn svg {
+  font-size: 18px;
+}
+
+.confirm-btn.confirm {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+}
+
+.confirm-btn.cancel {
+  background: #f7fafc;
+  color: #2d3748;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 6px 18px rgba(66, 75, 93, 0.15);
+}
+
+.confirm-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.confirm-btn.confirm:active,
+.confirm-btn.cancel:active {
+  transform: translateY(0);
+}
+
+.confirm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .modal-close {
   background: none;
   border: none;
@@ -659,7 +719,6 @@ button[type="submit"]:disabled {
   transition: all 0.2s ease;
   border-radius: 4px;
 }
-
 .modal-close:hover {
   background: #f7fafc;
   color: #1a202c;

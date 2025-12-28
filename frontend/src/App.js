@@ -135,6 +135,11 @@ function App() {
     setSelectedUtility(putility);
   }
 
+  const closeConfirmModal = () => {
+    setShowConfirmModal(false);
+    setSelectedUtility(null);
+  }
+
   const rateClickSelected = async () =>{
     console.log(selectedUtility)
 
@@ -342,18 +347,25 @@ function App() {
       </div>
 
       {showConfirmModal && (
-        <div className="modal-overlay" onClick={() => setShowConfirmModal(false)}>
+        <div className="modal-overlay" onClick={closeConfirmModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Do you want to save this utility as your current utility?</h2>
-              <button className="modal-close" onClick={() => setShowConfirmModal(false)}>
+              <h2>Are you sure you want to save this utility?</h2>
+              <button className="modal-close" onClick={closeConfirmModal}>
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            <div className="type-selection">
-              <button type="button"  className="type-button" onClick={()=>setShowConfirmModal(false)} ><FontAwesomeIcon className="type-icon" icon={faCircleXmark} /></button>
-              <button type="button"  className="type-button" onClick={rateClickSelected} ><FontAwesomeIcon className="type-icon" icon={faCircleCheck}/></button>
-          </div>
+            <p className="modal-description">Saving this will replace your current configuration with the selected rate.</p>
+            <div className="confirm-actions">
+              <button type="button" className="confirm-btn cancel" onClick={closeConfirmModal}>
+                <FontAwesomeIcon icon={faCircleXmark} />
+                <span>Keep current</span>
+              </button>
+              <button type="button" className="confirm-btn confirm" onClick={rateClickSelected}>
+                <FontAwesomeIcon icon={faCircleCheck} />
+                <span>Save this rate</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
