@@ -3,6 +3,12 @@ import { render, screen, waitFor, within, fireEvent } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import App from '../App';
 
+
+// Base Values for responses
+const bestGas = { id: 1, name: 'Gas Saver', type: 'Gas', rate: 0.12345, rateLength: 12, createdAt: new Date().toISOString() };
+const bestElectric = { id: 2, name: 'Spark Deal', type: 'Electric', rate: 0.23456, rateLength: 6, url: 'https://example.com' };
+const configs = [{ id: 10, name: 'Current Gas', type: 'Gas', rate: 0.34567, duration: new Date().toISOString() }];
+
 // Helper to mock fetch responses sequence based on URL
 function createFetchMock(routes) {
   return jest.fn(async (url, options) => {
@@ -41,10 +47,6 @@ describe('App', () => {
   });
 
   test('shows loading states and then renders best rates and configs after successful fetch', async () => {
-    const bestGas = { id: 1, name: 'Gas Saver', type: 'Gas', rate: 0.12345, rateLength: 12, createdAt: new Date().toISOString() };
-    const bestElectric = { id: 2, name: 'Spark Deal', type: 'Electric', rate: 0.23456, rateLength: 6, url: 'https://example.com' };
-    const configs = [{ id: 10, name: 'Current Gas', type: 'Gas', rate: 0.34567, duration: new Date().toISOString() }];
-
     global.fetch = createFetchMock([
       { match: '/api/putility/best/gas', json: bestGas },
       { match: '/api/putility/best/electric', json: bestElectric },
@@ -93,11 +95,15 @@ describe('App', () => {
   });
 
   test('handles error states for best rates', async () => {
+    // Mock the fetch responses
     global.fetch = createFetchMock([
       { match: '/api/putility/best/gas', error: 'Failed to fetch best gas rate' },
       { match: '/api/putility/best/electric', error: 'Failed to fetch best electric rate' },
       { match: '/api/config', json: [] },
     ]);
+
+    // Mock console error
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
     render(<App />);
 
@@ -121,8 +127,8 @@ describe('App', () => {
 
   test('opens Add Current Utility modal and validates form', async () => {
     global.fetch = createFetchMock([
-      { match: '/api/putility/best/gas', json: null },
-      { match: '/api/putility/best/electric', json: null },
+      { match: '/api/putility/best/gas', json: bestGas },
+      { match: '/api/putility/best/electric', json: bestElectric },
       { match: '/api/config', json: [] },
     ]);
 
@@ -157,8 +163,8 @@ describe('App', () => {
     const afterSaveConfigs = [{ id: 99, name: 'My Utility', type: 'Gas', rate: 0.5 }];
 
     const fetchMock = jest.fn(async (url, options) => {
-      if (url.includes('/api/putility/best/gas')) return { ok: true, json: async () => null };
-      if (url.includes('/api/putility/best/electric')) return { ok: true, json: async () => null };
+      if (url.includes('/api/putility/best/gas')) return { ok: true, json: async () => bestGas };
+      if (url.includes('/api/putility/best/electric')) return { ok: true, json: async () => bestElectric };
       if (url.includes('/api/config') && (!options || options.method !== 'PUT')) {
         return { ok: true, json: async () => initialConfigs };
       }
@@ -197,7 +203,8 @@ describe('App', () => {
       if (url.includes('/api/config') && (!options || options.method !== 'PUT')) {
         return { ok: true, json: async () => afterSaveConfigs };
       }
-      return { ok: true, json: async () => null };
+      if (url.includes('/api/putility/best/gas')) return { ok: true, json: async () => bestGas };
+      if (url.includes('/api/putility/best/electric')) return { ok: true, json: async () => bestElectric };
     });
 
     // Wait for modal to close by timeout (1.5s)
@@ -211,7 +218,7 @@ describe('App', () => {
 
     const fetchSpy = jest.fn(async (url, options) => {
       if (url.includes('/api/putility/best/gas')) return { ok: true, json: async () => bestGas };
-      if (url.includes('/api/putility/best/electric')) return { ok: true, json: async () => null };
+      if (url.includes('/api/putility/best/electric')) return { ok: true, json: async () => bestElectric };
       if (url.includes('/api/config') && (!options || options.method !== 'PUT')) return { ok: true, json: async () => [] };
       if (url.includes('/api/config') && options && options.method === 'PUT') return { ok: true, json: async () => ({ ok: true }) };
       throw new Error(`Unexpected call: ${url}`);
