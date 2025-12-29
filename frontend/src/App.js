@@ -130,7 +130,6 @@ function App() {
   }, []);
 
   const handleRateClick = async (putility) => {
-    console.log('Clicked rate:', putility);
     setShowConfirmModal(true);
     setSelectedUtility(putility);
   }
@@ -141,8 +140,6 @@ function App() {
   }
 
   const rateClickSelected = async () =>{
-    console.log(selectedUtility)
-
     //convert putility to cutility
     try {
 
