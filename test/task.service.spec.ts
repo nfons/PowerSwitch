@@ -88,6 +88,9 @@ describe('TasksService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    jest
+      .spyOn(TasksService.prototype, 'onModuleInit')
+      .mockImplementation(() => undefined);
 
     testingModule = await Test.createTestingModule({
       providers: [
@@ -125,9 +128,9 @@ describe('TasksService', () => {
       expect(service).toBeDefined();
     });
 
-    it('should have default schedule set to EVERY_1ST_DAY_OF_MONTH_AT_NOON', () => {
+    it('should have default schedule set to 0 0 10 * *', () => {
       expect(service.schedule).toBe(
-        CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON,
+        '0 0 10 * *',
       );
     });
 
@@ -262,7 +265,7 @@ describe('TasksService', () => {
 
       const service = module.get<TasksService>(TasksService);
       expect(service.schedule).toBe(
-        CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON,
+        '0 0 10 * *'
       );
     });
 
@@ -289,7 +292,7 @@ describe('TasksService', () => {
 
       const service = module.get<TasksService>(TasksService);
       expect(service.schedule).toBe(
-        CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON,
+        '0 0 10 * *',
       );
     });
   });
