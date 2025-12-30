@@ -58,24 +58,20 @@ GAS_URL='someurl.com'
 **Run the application:**
 
 ```bash
-# Development mode with hot reload
-npm run start:dev
+# start the application
+npm run start
 
 # Production mode
 npm run build && npm run start:prod
 ```
 
 ## Development
+### API docs (Swagger)
 
-### Available Scripts
+The API is documented using Swagger (OpenAPI).
 
-```bash
-# Start development server
-npm run start:dev
-
-# Build the project
-npm run build
-```
+- Swagger UI: http://localhost:8080/docs
+- All API routes are prefixed with `/api` (for example: `GET /api/putlity`, `GET /api/putility/best/:type`).
 
 ### Project Structure
 
@@ -91,6 +87,8 @@ PowerSwitch/
 # Run unit tests
 npm run test
 
+# coverage tests
+npm run test:cov
 ```
 
 ## Docker Deployment
