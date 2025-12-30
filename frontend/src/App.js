@@ -28,8 +28,14 @@ function App() {
   const [form, setForm] = useState(initialFormState);
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
-  const [configs, setConfigs] = useState([]);
-  const [loadingConfigs, setLoadingConfigs] = useState(true);
+
+  // Current utility configs state
+  const [currentGas, setCurrentGas] = useState(null);
+  const [currentElectric, setCurrentElectric] = useState(null);
+  const [loadingCurrentGas, setLoadingCurrentGas] = useState(true);
+  const [loadingCurrentElectric, setLoadingCurrentElectric] = useState(true);
+  const [errorCurrentGas, setErrorCurrentGas] = useState(null);
+  const [errorCurrentElectric, setErrorCurrentElectric] = useState(null);
 
   // store selected utility
   const [selectedUtility, setSelectedUtility] = useState(null);
@@ -89,20 +95,41 @@ function App() {
     }
   };
 
-  // Calls the fetch config endpoint to get all saved configs.
-  const fetchConfigs = async () => {
+  // Fetch current gas config
+  const fetchCurrentGas = async () => {
     try {
-      setLoadingConfigs(true);
-      const response = await fetch(`${API_HOST}/api/config`);
+      setLoadingCurrentGas(true);
+      setErrorCurrentGas(null);
+      const response = await fetch(`${API_HOST}/api/config/current/gas`);
       if (!response.ok) {
-        throw new Error('Failed to fetch configs');
+        throw new Error('Failed to fetch current gas config');
       }
       const data = await response.json();
-      setConfigs(data);
+      setCurrentGas(data);
     } catch (error) {
-      console.error('Error fetching configs:', error);
+      console.error('Error fetching current gas config:', error);
+      setErrorCurrentGas(error.message);
     } finally {
-      setLoadingConfigs(false);
+      setLoadingCurrentGas(false);
+    }
+  };
+
+  // Fetch current electric config
+  const fetchCurrentElectric = async () => {
+    try {
+      setLoadingCurrentElectric(true);
+      setErrorCurrentElectric(null);
+      const response = await fetch(`${API_HOST}/api/config/current/electric`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch current electric config');
+      }
+      const data = await response.json();
+      setCurrentElectric(data);
+    } catch (error) {
+      console.error('Error fetching current electric config:', error);
+      setErrorCurrentElectric(error.message);
+    } finally {
+      setLoadingCurrentElectric(false);
     }
   };
 
@@ -126,7 +153,8 @@ function App() {
   useEffect(() => {
     fetchBestGas();
     fetchBestElectric();
-    fetchConfigs();
+    fetchCurrentGas();
+    fetchCurrentElectric();
   }, []);
 
   const handleRateClick = async (putility) => {
@@ -158,7 +186,8 @@ function App() {
       console.error('Error converting putility to cutility:', e);
     } finally {
       setShowConfirmModal(false);
-      fetchConfigs(); // Reload configs after successful save
+      fetchCurrentGas(); // Reload current configs after successful save
+      fetchCurrentElectric();
     }
   }
 
@@ -195,10 +224,11 @@ function App() {
         payload.duration = new Date(form.duration).toISOString();
       }
 
-      saveConfigs(payload);
+      await saveConfigs(payload);
       setStatus('success');
       setForm(initialFormState);
-      await fetchConfigs(); // Reload configs after successful save
+      fetchCurrentGas(); // Reload current configs after successful save
+      fetchCurrentElectric();
 
       // Close modal after 1.5 seconds
       setTimeout(() => {
@@ -302,44 +332,93 @@ function App() {
 
         <section className="configs-section">
           <h2>Current Utility Rates</h2>
-          {loadingConfigs ? (
-            <div className="loading">Loading configurations...</div>
-          ) : configs.length === 0 ? (
-            <div className="empty-state">No configurations saved yet. Add your first one using the button above!</div>
-          ) : (
-            <div className="configs-grid">
-              {configs.map((config) => (
-                <div key={config.id} className="config-card">
+          <div className="configs-grid">
+            <div className="rate-card-wrapper">
+              <h3>
+                <FontAwesomeIcon icon={faFireFlameSimple} className="section-icon gas" />
+                Current Gas Rate
+              </h3>
+              {loadingCurrentGas ? (
+                <div className="loading">Loading...</div>
+              ) : errorCurrentGas ? (
+                <div className="error-state">Error: {errorCurrentGas}</div>
+              ) : !currentGas ? (
+                <div className="empty-state">No gas configuration saved yet. Add one using the button above!</div>
+              ) : (
+                <div className="config-card">
                   <div className="config-header">
-                    <h3>{config.name}</h3>
-                    <span className={`config-type ${config.type?.toLowerCase()}`}>
-                      {config.type}
+                    <h4>{currentGas.name}</h4>
+                    <span className="config-type gas">
+                      {currentGas.type}
                     </span>
                   </div>
                   <div className="config-details">
                     <div className="config-row">
                       <span className="config-label">Rate:</span>
-                      <span className="config-value rate">${Number(config.rate).toFixed(5)}</span>
+                      <span className="config-value rate">${Number(currentGas.rate).toFixed(5)}</span>
                     </div>
-                    {config.duration && (
+                    {currentGas.duration && (
                       <div className="config-row">
                         <span className="config-label">Valid Until:</span>
                         <span className="config-value">
-                          {new Date(config.duration).toLocaleString()}
+                          {new Date(currentGas.duration).toLocaleString()}
                         </span>
                       </div>
                     )}
-                    {config.fields && Object.keys(config.fields).length > 0 && (
+                    {currentGas.fields && Object.keys(currentGas.fields).length > 0 && (
                       <div className="config-row">
                         <span className="config-label">Additional Fields:</span>
-                        <pre className="config-json">{JSON.stringify(config.fields, null, 2)}</pre>
+                        <pre className="config-json">{JSON.stringify(currentGas.fields, null, 2)}</pre>
                       </div>
                     )}
                   </div>
                 </div>
-              ))}
+              )}
             </div>
-          )}
+
+            <div className="rate-card-wrapper">
+              <h3>
+                <FontAwesomeIcon icon={faBoltLightning} className="section-icon electric" />
+                Current Electric Rate
+              </h3>
+              {loadingCurrentElectric ? (
+                <div className="loading">Loading...</div>
+              ) : errorCurrentElectric ? (
+                <div className="error-state">Error: {errorCurrentElectric}</div>
+              ) : !currentElectric ? (
+                <div className="empty-state">No electric configuration saved yet. Add one using the button above!</div>
+              ) : (
+                <div className="config-card">
+                  <div className="config-header">
+                    <h4>{currentElectric.name}</h4>
+                    <span className="config-type electricity">
+                      {currentElectric.type}
+                    </span>
+                  </div>
+                  <div className="config-details">
+                    <div className="config-row">
+                      <span className="config-label">Rate:</span>
+                      <span className="config-value rate">${Number(currentElectric.rate).toFixed(5)}</span>
+                    </div>
+                    {currentElectric.duration && (
+                      <div className="config-row">
+                        <span className="config-label">Valid Until:</span>
+                        <span className="config-value">
+                          {new Date(currentElectric.duration).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {currentElectric.fields && Object.keys(currentElectric.fields).length > 0 && (
+                      <div className="config-row">
+                        <span className="config-label">Additional Fields:</span>
+                        <pre className="config-json">{JSON.stringify(currentElectric.fields, null, 2)}</pre>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </section>
       </div>
 
