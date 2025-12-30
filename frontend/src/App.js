@@ -134,7 +134,7 @@ function App() {
   };
 
   const calculateBestRate = () => {
-    console.log('Calculating best rate for:');
+    // Calculate best rates logic TODO
   }
 
   const saveConfigs = async (payload) =>{
