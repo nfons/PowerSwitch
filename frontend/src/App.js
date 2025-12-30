@@ -404,7 +404,7 @@ function App() {
                 <div className="config-card">
                   <div className="config-header">
                     <h4>{currentElectric.name}</h4>
-                    <span className="config-type electricity">
+                    <span className="config-type electric">
                       {currentElectric.type}
                     </span>
                   </div>
