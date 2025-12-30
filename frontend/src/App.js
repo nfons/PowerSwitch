@@ -37,6 +37,10 @@ function App() {
   const [errorCurrentGas, setErrorCurrentGas] = useState(null);
   const [errorCurrentElectric, setErrorCurrentElectric] = useState(null);
 
+  // Best rate comparison state
+  const [isBestGas, setIsBestGas] = useState(false);
+  const [isBestElectric, setIsBestElectric] = useState(false);
+
   // store selected utility
   const [selectedUtility, setSelectedUtility] = useState(null);
 
@@ -134,7 +138,19 @@ function App() {
   };
 
   const calculateBestRate = () => {
-    // Calculate best rates logic TODO
+    // Compare gas rates
+    if (currentGas && bestGas && currentGas.rate > bestGas.rate) {
+      setIsBestGas(true);
+    } else {
+      setIsBestGas(false);
+    }
+
+    // Compare electric rates
+    if (currentElectric && bestElectric && currentElectric.rate > bestElectric.rate) {
+      setIsBestElectric(true);
+    } else {
+      setIsBestElectric(false);
+    }
   }
 
   const saveConfigs = async (payload) =>{
@@ -228,8 +244,9 @@ function App() {
     try {
       const payload = {
         name: form.name.trim(),
-        type: form.type.trim(),
+        type: form.type.trim().toLowerCase(),
         rate: numericRate,
+        duration: form.duration.trim() ? new Date(form.duration).toISOString() : new Date()
       };
 
       // Add optional fields if provided
@@ -316,7 +333,7 @@ function App() {
     <main className="App">
       <div className="app-container">
         <div className="header-section">
-          <h1><FontAwesomeIcon icon={faTowerCell} /> Power Switch</h1>
+          <h1><FontAwesomeIcon icon={faTowerCell} /> Power Switch </h1>
           <button className="add-utility-button" onClick={() => setShowModal(true)}>
             <FontAwesomeIcon icon={faPlus} />
             <span>Add Current Utility</span>
