@@ -133,6 +133,10 @@ function App() {
     }
   };
 
+  const calculateBestRate = () => {
+    console.log('Calculating best rate for:');
+  }
+
   const saveConfigs = async (payload) =>{
     const response = await fetch(`${API_HOST}/api/config`, {
       method: 'PUT',
@@ -151,10 +155,19 @@ function App() {
     return response
   }
   useEffect(() => {
-    fetchBestGas();
-    fetchBestElectric();
-    fetchCurrentGas();
-    fetchCurrentElectric();
+    const fetchAllData = async () => {
+      await Promise.all([
+        fetchBestGas(),
+        fetchBestElectric(),
+        fetchCurrentGas(),
+        fetchCurrentElectric(),
+      ]);
+
+      // Call calculateBestRate after all fetches are complete
+      calculateBestRate();
+    };
+
+    fetchAllData();
   }, []);
 
   const handleRateClick = async (putility) => {
