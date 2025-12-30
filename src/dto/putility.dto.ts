@@ -1,11 +1,15 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { utilityType } from '../entities/utlityType.enum';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreatePUtilityDto {
   @ApiProperty({
     description: 'Name of the public utility provider or plan',
     example: 'Acme Electric Saver',
   })
+  @IsString()
+  @IsNotEmpty()
   name: string;
 
   @ApiProperty({
@@ -13,6 +17,9 @@ export class CreatePUtilityDto {
     example: 0.12345,
     type: Number,
   })
+  @Type(() => Number)
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0)
   rate: number;
 
   @ApiProperty({
@@ -21,6 +28,7 @@ export class CreatePUtilityDto {
     enumName: 'utilityType',
     example: utilityType.ELECTRIC,
   })
+  @IsEnum(utilityType)
   type: string;
 
   @ApiPropertyOptional({
@@ -28,6 +36,8 @@ export class CreatePUtilityDto {
     example: 'https://provider.example.com/awesome-plan',
     nullable: true,
   })
+  @IsOptional()
+  @IsUrl()
   url?: string;
 }
 
