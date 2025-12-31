@@ -72,11 +72,13 @@ function App() {
       }
       const data = await response.json();
       setBestGas(data);
+      return data;
     } catch (error) {
       console.error('Error fetching best gas rate:', error);
       setErrorGas(error.message);
+      return null;
     } finally {
-      setLoadingGas(false); //Will make this prettier later
+      setLoadingGas(false);
     }
   };
 
@@ -91,11 +93,13 @@ function App() {
       }
       const data = await response.json();
       setBestElectric(data);
+      return data;
     } catch (error) {
       console.error('Error fetching best electric rate:', error);
       setErrorElectric(error.message);
+      return null;
     } finally {
-      setLoadingElectric(false); //Will make this prettier later
+      setLoadingElectric(false);
     }
   };
 
@@ -110,9 +114,11 @@ function App() {
       }
       const data = await response.json();
       setCurrentGas(data);
+      return data;
     } catch (error) {
       console.error('Error fetching current gas config:', error);
       setErrorCurrentGas(error.message);
+      return null;
     } finally {
       setLoadingCurrentGas(false);
     }
@@ -129,24 +135,26 @@ function App() {
       }
       const data = await response.json();
       setCurrentElectric(data);
+      return data;
     } catch (error) {
       console.error('Error fetching current electric config:', error);
       setErrorCurrentElectric(error.message);
+      return null;
     } finally {
       setLoadingCurrentElectric(false);
     }
   };
 
-  const calculateBestRate = () => {
+  const calculateBestRate = (bestGasData, bestElectricData, currentGasData, currentElectricData) => {
     // Compare gas rates
-    if (currentGas && bestGas && currentGas.rate > bestGas.rate) {
+    if (currentGasData && bestGasData && currentGasData.rate > bestGasData.rate) {
       setIsBestGas(true);
     } else {
       setIsBestGas(false);
     }
 
     // Compare electric rates
-    if (currentElectric && bestElectric && currentElectric.rate > bestElectric.rate) {
+    if (currentElectricData && bestElectricData && currentElectricData.rate > bestElectricData.rate) {
       setIsBestElectric(true);
     } else {
       setIsBestElectric(false);
@@ -172,15 +180,17 @@ function App() {
   }
   useEffect(() => {
     const fetchAllData = async () => {
-      await Promise.all([
+      const results = await Promise.all([
         fetchBestGas(),
         fetchBestElectric(),
         fetchCurrentGas(),
         fetchCurrentElectric(),
       ]);
 
-      // Call calculateBestRate after all fetches are complete
-      calculateBestRate();
+      const [bestGasData, bestElectricData, currentGasData, currentElectricData] = results;
+
+      // Call calculateBestRate after all fetches are complete with the actual data
+      calculateBestRate(bestGasData, bestElectricData, currentGasData, currentElectricData);
     };
 
     fetchAllData();
