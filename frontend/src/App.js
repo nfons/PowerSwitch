@@ -284,7 +284,7 @@ function App() {
     }
   };
 
-  const renderUtilityCard = (utility, loading, error, icon, typeClass) => {
+  const renderUtilityCard = (utility, loading, error, icon, typeClass, isBest = false) => {
     if (loading) {
       return <div className="loading">Loading...</div>;
     }
@@ -298,7 +298,13 @@ function App() {
     }
 
     return (
-      <div className="utility-card" onClick={() => handleRateClick(utility)}>
+      <div className={`utility-card ${isBest ? 'best' : ''}`} onClick={() => handleRateClick(utility)}>
+        {isBest && (<div className="best-tooltip" role="tooltip">This is the best available rate</div>)}
+        {isBest && (
+          <div className="best-indicator" aria-label="Best rate">
+            <span className="best-badge">Best</span>
+          </div>
+        )}
         <div className="utility-header">
           <FontAwesomeIcon icon={icon} className={`utility-icon ${typeClass}`} />
           <h3>{utility.name}</h3>
@@ -357,7 +363,7 @@ function App() {
                 <FontAwesomeIcon icon={faFireFlameSimple} className="section-icon gas" />
                 Best Gas Rate
               </h2>
-              {renderUtilityCard(bestGas, loadingGas, errorGas, faFireFlameSimple, 'gas')}
+              {renderUtilityCard(bestGas, loadingGas, errorGas, faFireFlameSimple, 'gas', isBestGas)}
             </div>
 
             <div className="rate-card-wrapper">
@@ -365,7 +371,7 @@ function App() {
                 <FontAwesomeIcon icon={faBoltLightning} className="section-icon electric" />
                 Best Electric Rate
               </h2>
-              {renderUtilityCard(bestElectric, loadingElectric, errorElectric, faBoltLightning, 'electric')}
+              {renderUtilityCard(bestElectric, loadingElectric, errorElectric, faBoltLightning, 'electric', isBestElectric)}
             </div>
           </div>
         </section>

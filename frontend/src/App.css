@@ -523,6 +523,50 @@ button[type="submit"]:disabled {
   border-color: #667eea;
 }
 
+.utility-card.best {
+  position: relative;
+  border: 2px solid #2ecc71;
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
+}
+
+.best-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-block;
+}
+
+.best-badge {
+  background: #2ecc71;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.utility-card .best-tooltip {
+  position: absolute;
+  top: 28px;
+  right: 0;
+  background: #222;
+  color: #fff;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.utility-card:hover .best-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .utility-header {
   display: flex;
   align-items: center;
