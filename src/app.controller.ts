@@ -120,6 +120,23 @@ export class AppController {
     }
   }
 
+  @Get('/config/current/:type')
+  @ApiOperation({ summary: 'Get the current Current Utility configuration by type' })
+  @ApiParam({ name: 'type', description: 'Type of utility', enum: utilityType, example: utilityType.ELECTRIC })
+  @ApiResponse({ status: 200, description: 'Current configuration record found.', type: CurrentUtility })
+  @ApiResponse({ status: 404, description: 'Current configuration record not found.' })
+  async getCurrentConfig(@Param('type') type: string): Promise<CurrentUtility | null> {
+    try {
+      const current = await this.utilityService.findCurrent(type);
+      if (!current) {
+        throw new NotFoundException('Current configuration record not found.');
+      }
+      return current;
+    } catch (e) {
+      throw new NotFoundException('Current configuration record not found.');
+    }
+  }
+
   @ApiOperation({ summary: 'Get a Current Utility configuration by ID' })
   @ApiParam({ name: 'id', description: 'Configuration ID', type: Number, example: 1 })
   @ApiResponse({ status: 200, description: 'Configuration record found.', type: CurrentUtility })
