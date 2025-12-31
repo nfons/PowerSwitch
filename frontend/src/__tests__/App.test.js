@@ -255,5 +255,69 @@ describe('App', () => {
       expect(screen.queryByRole('heading', { name: /Are you sure you want to save this utility\?/i })).not.toBeInTheDocument();
     });
   });
-});
 
+  test('shows Best badge and tooltip for Gas when isBestGas is true', async () => {
+    // Mock best rates lower than current to trigger isBestGas true
+    const bestGas = { id: 1, name: 'Gas Saver', type: 'Gas', rate: 0.10, rateLength: 12 };
+    const bestElectric = { id: 2, name: 'Spark Deal', type: 'Electric', rate: 0.20, rateLength: 6 };
+    const currentGas = { id: 10, name: 'My Gas', type: 'gas', rate: 0.50, duration: new Date().toISOString() };
+    const currentElectric = { id: 11, name: 'My Electric', type: 'electric', rate: 0.18, duration: new Date().toISOString() };
+
+    global.fetch = jest.fn(async (url) => {
+      if (url.includes('/api/putility/best/gas')) return { ok: true, json: async () => bestGas };
+      if (url.includes('/api/putility/best/electric')) return { ok: true, json: async () => bestElectric };
+      if (url.includes('/api/config/current/gas')) return { ok: true, json: async () => currentGas };
+      if (url.includes('/api/config/current/electric')) return { ok: true, json: async () => currentElectric };
+      throw new Error(`Unexpected url: ${url}`);
+    });
+
+    render(<App />);
+
+    const gasHeading = await screen.findByRole('heading', { name: /Best Gas Rate/i });
+    const gasWrapper = gasHeading.closest('.rate-card-wrapper');
+    await waitFor(() => {
+      expect(within(gasWrapper).queryByText(/Loading/i)).not.toBeInTheDocument();
+    });
+
+
+    const gasCard = within(gasWrapper).getByRole('heading', { name: 'Gas Saver' }).closest('.utility-card');
+    expect(within(gasWrapper).getByText('Best')).toBeInTheDocument();
+
+    // Tooltip should appear on hover
+    const tooltip = within(gasWrapper).getByRole('tooltip');
+
+    await userEvent.hover(gasCard);
+    expect(tooltip).toBeInTheDocument();
+  });
+
+  test('shows Best badge and tooltip for Electric when isBestElectric is true', async () => {
+    //Mocks like above
+    const bestGas = { id: 1, name: 'Gas Saver', type: 'Gas', rate: 0.10, rateLength: 12 };
+    const bestElectric = { id: 2, name: 'Spark Deal', type: 'Electric', rate: 0.15, rateLength: 6 };
+    const currentGas = { id: 10, name: 'My Gas', type: 'gas', rate: 0.05, duration: new Date().toISOString() };
+    const currentElectric = { id: 11, name: 'My Electric', type: 'electric', rate: 0.50, duration: new Date().toISOString() };
+
+    global.fetch = jest.fn(async (url) => {
+      if (url.includes('/api/putility/best/gas')) return { ok: true, json: async () => bestGas };
+      if (url.includes('/api/putility/best/electric')) return { ok: true, json: async () => bestElectric };
+      if (url.includes('/api/config/current/gas')) return { ok: true, json: async () => currentGas };
+      if (url.includes('/api/config/current/electric')) return { ok: true, json: async () => currentElectric };
+      throw new Error(`Unexpected url: ${url}`);
+    });
+
+    render(<App />);
+
+    const electricHeading = await screen.findByRole('heading', { name: /Best Electric Rate/i });
+    const electricWrapper = electricHeading.closest('.rate-card-wrapper');
+    await waitFor(() => {
+      expect(within(electricWrapper).queryByText(/Loading/i)).not.toBeInTheDocument();
+    });
+
+    const electricCard = within(electricWrapper).getByRole('heading', { name: 'Spark Deal' }).closest('.utility-card');
+    expect(within(electricWrapper).getByText('Best')).toBeInTheDocument();
+
+    const tooltip = within(electricWrapper).getByRole('tooltip');
+    await userEvent.hover(electricCard);
+    expect(tooltip).toBeInTheDocument();
+  });
+});
