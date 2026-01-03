@@ -12,13 +12,14 @@ import { PUtility } from './entities/putility/putility.entity';
 @Injectable()
 export class TasksService {
   private readonly logger: Logger;
-
+  private currentGasRates: any = [];
+  private currentElectricRates: any = [];
   /*
     Default schedule to run the task every 1st day of the month at noon
     0 12 1 * *
     Utility Rates do not change often, we can save API calls by running this task once a month
      */
-  public schedule: string = '0 0 10 * *';
+  public schedule: string =  '0 0 15 * *'; // Rates should be out by then. 15th day of mo at midnight
 
   constructor(
     private readonly configService: ConfigService,
@@ -218,11 +219,13 @@ export class TasksService {
                 item['Contact Phone Number'] || item['Supplier'],
               );
               this.putilityService.add(putilityEntity); // add entry to db
+              // add entry to currentRate
               this.logger.debug(
                 'Added Putility entry to DB:',
                 putilityEntity.name,
               );
             });
+            return results;
           })
           .on('error', (err) => {
             this.logger.error('Error parsing CSV:', err.message);
@@ -259,7 +262,7 @@ export class TasksService {
     // peco card does not have supplier-card class so we add it manually
 
     priceIndicators.each((i, el) => {
-      if (results.length > 3) return false; // Stop after finding 3. we could make this configurable
+      if (results.length > 3) return results; // Stop after finding 3. we could make this configurable
       this.getDataFromNode(el, $, type, results);
     });
 
@@ -269,28 +272,37 @@ export class TasksService {
 
     await browser.close();
   }
+  private async sendEmail(){
+    return;
+  }
   public async getUtilityRates() {
+    // reset current rates, so we don't need to fetch from db
+    this.currentGasRates = [];
+    this.currentElectricRates = [];
     // check config to see if rates should use web or csv approach
     try {
-      if (this.configService.get('API_TYPE') === 'web') {
-        this.logger.debug('Using WEB call to get utility rates');
-        if (this.configService.get('GAS_URL')) {
-          await this.fetchWeb('gas');
-        }
-        if (this.configService.get('ELECTRIC_URL')) {
-          await this.fetchWeb('electric');
-        }
-      } else {
+      const apiType = (this.configService.get<string>('API_TYPE') || '').toLowerCase();
+      if (apiType === 'csv') {
         this.logger.debug('Using CSV file to get utility rates');
         if (this.configService.get('GAS_URL')) {
-          await this.fetchCSV('gas');
+          this.currentGasRates = await this.fetchCSV('gas');
         }
         if (this.configService.get('ELECTRIC_URL')) {
-          await this.fetchCSV('electric');
+          this.currentElectricRates = await this.fetchCSV('electric');
+        }
+      } else {
+        this.logger.debug('Using WEB call to get utility rates');
+        if (this.configService.get('GAS_URL')) {
+          this.currentGasRates = await this.fetchWeb('gas');
+        }
+        if (this.configService.get('ELECTRIC_URL')) {
+          this.currentElectricRates = await this.fetchWeb('electric');
         }
       }
     } catch (error) {
       this.logger.error('Error in getUtilityRates:', error.message);
     }
+
+    // After this is done, we need to compare the rates and see if we need to alert
   }
 }

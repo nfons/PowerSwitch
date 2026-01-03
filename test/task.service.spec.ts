@@ -128,9 +128,9 @@ describe('TasksService', () => {
       expect(service).toBeDefined();
     });
 
-    it('should have default schedule set to 0 0 10 * *', () => {
+    it('should have default schedule set to 0 0 15 * *', () => {
       expect(service.schedule).toBe(
-        '0 0 10 * *',
+        '0 0 15 * *',
       );
     });
 
@@ -265,7 +265,7 @@ describe('TasksService', () => {
 
       const service = module.get<TasksService>(TasksService);
       expect(service.schedule).toBe(
-        '0 0 10 * *'
+        '0 0 15 * *'
       );
     });
 
@@ -292,7 +292,7 @@ describe('TasksService', () => {
 
       const service = module.get<TasksService>(TasksService);
       expect(service.schedule).toBe(
-        '0 0 10 * *',
+        '0 0 15 * *',
       );
     });
   });
@@ -611,7 +611,7 @@ describe('TasksService', () => {
       expect(service['fetchCSV']).not.toHaveBeenCalled();
     });
 
-    it('should default to CSV approach when API_TYPE is not set', async () => {
+    it('should default to WEB approach when API_TYPE is not set', async () => {
       mockConfigService.get.mockImplementation((key: string) => {
         if (key === 'GAS_URL') return 'https://example.com/gas.csv';
         return undefined;
@@ -619,7 +619,7 @@ describe('TasksService', () => {
 
       await service['getUtilityRates']();
 
-      expect(service['fetchCSV']).toHaveBeenCalledWith('gas');
+      expect(service['fetchWeb']).toHaveBeenCalledWith('gas');
     });
   });
   describe('getGoogleUrl', () => {
