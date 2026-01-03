@@ -8,12 +8,13 @@ import puppeteer from 'puppeteer';
 import * as cheerio from 'cheerio';
 import { PutlityService } from './entities/putility/putlity.service';
 import { PUtility } from './entities/putility/putility.entity';
+import { CurrentUtilityService } from './entities/current_utility/current-utility.service';
 
 @Injectable()
 export class TasksService {
   private readonly logger: Logger;
-  private currentGasRates: any = [];
-  private currentElectricRates: any = [];
+  private currentGasRates: any = new Array();
+  private currentElectricRates: any = new Array();
   /*
     Default schedule to run the task every 1st day of the month at noon
     0 12 1 * *
@@ -25,6 +26,7 @@ export class TasksService {
     private readonly configService: ConfigService,
     private schedulerRegistry: SchedulerRegistry,
     private putilityService: PutlityService,
+    private cutilityService: CurrentUtilityService
   ) {
 
     this.logger = new Logger(TasksService.name);
@@ -33,7 +35,8 @@ export class TasksService {
     const job = new CronJob(schedule, async () => {
       this.getUtilityRates();
     });
-
+    this.currentGasRates = [];
+    this.currentElectricRates = [];
     this.schedulerRegistry.addCronJob(TasksService.name, job);
     job.start();
   }
@@ -262,17 +265,17 @@ export class TasksService {
     // peco card does not have supplier-card class so we add it manually
 
     priceIndicators.each((i, el) => {
-      if (results.length > 3) return results; // Stop after finding 3. we could make this configurable
+      if (results.length > 3) return; // Stop after finding 3. we could make this configurable
       this.getDataFromNode(el, $, type, results);
     });
 
     pecoCard.each((i, el) => {
       this.getDataFromNode(el, $, type, results);
     });
-
     await browser.close();
+    return results;
   }
-  private async sendEmail(){
+  private async sendEmail(type, utility: PUtility){
     return;
   }
   public async getUtilityRates() {
@@ -304,5 +307,21 @@ export class TasksService {
     }
 
     // After this is done, we need to compare the rates and see if we need to alert
+    function compare(a, b) {
+      if (a.rate < b.rate) return -1;
+      if (a.rate > b.rate) return 1;
+      return 0;
+    }
+
+    // sort the array, we technically might - should not need to, but will do it just in case.
+    // its no that expensive since its only 3 elements
+    this.currentGasRates.sort(compare);
+    this.currentElectricRates.sort(compare);
+
+    // best rate is now the 1st item in each array
+    const bestGasRate = this.currentGasRates[0];
+    const bestElectricRate = this.currentElectricRates[0];
+
+
   }
 }

@@ -4,6 +4,7 @@ import { SchedulerRegistry, CronExpression } from '@nestjs/schedule';
 import { TasksService } from '../src/task.service';
 import { CronJob } from 'cron';
 import { PutlityService } from '../src/entities/putility/putlity.service';
+import { CurrentUtilityService } from '../src/entities/current_utility/current-utility.service';
 
 // Mock CronJob
 jest.mock('cron', () => {
@@ -86,6 +87,10 @@ describe('TasksService', () => {
     add: jest.fn().mockResolvedValue({}),
   };
 
+  const mockCurrentUtilityService = {
+    // Add any methods that CurrentUtilityService might have
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
     jest
@@ -106,6 +111,10 @@ describe('TasksService', () => {
         {
           provide: PutlityService,
           useValue: mockPutlityService,
+        },
+        {
+          provide: CurrentUtilityService,
+          useValue: mockCurrentUtilityService,
         },
       ],
     }).compile();
@@ -152,6 +161,10 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
         ],
       }).compile();
 
@@ -175,6 +188,10 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
           },
         ],
       }).compile();
@@ -202,6 +219,10 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
           },
         ],
       }).compile();
@@ -236,6 +257,10 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
         ],
       }).compile();
 
@@ -259,6 +284,10 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
           },
         ],
       }).compile();
@@ -286,6 +315,10 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
           },
         ],
       }).compile();
@@ -317,6 +350,10 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
         ],
       }).compile();
 
@@ -339,6 +376,10 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
           },
         ],
       }).compile();
@@ -369,6 +410,10 @@ describe('TasksService', () => {
             {
               provide: PutlityService,
               useValue: mockPutlityService,
+            },
+            {
+              provide: CurrentUtilityService,
+              useValue: mockCurrentUtilityService,
             },
           ],
         }).compile();
@@ -528,8 +573,8 @@ describe('TasksService', () => {
 
   describe('getUtilityRates', () => {
     beforeEach(() => {
-      jest.spyOn(service as any, 'fetchCSV').mockResolvedValue(undefined);
-      jest.spyOn(service as any, 'fetchWeb').mockResolvedValue(undefined);
+      jest.spyOn(service as any, 'fetchCSV').mockResolvedValue([]);
+      jest.spyOn(service as any, 'fetchWeb').mockResolvedValue([]);
     });
 
     it('should use web approach when API_TYPE is web', async () => {
