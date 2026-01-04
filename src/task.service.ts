@@ -10,6 +10,7 @@ import { PutlityService } from './entities/putility/putlity.service';
 import { PUtility } from './entities/putility/putility.entity';
 import { CurrentUtilityService } from './entities/current_utility/current-utility.service';
 import { CurrentUtility } from './entities/current_utility/currentUtility.entity';
+import { EmailService } from './email/email.service';
 
 @Injectable()
 export class TasksService {
@@ -27,7 +28,8 @@ export class TasksService {
     private readonly configService: ConfigService,
     private schedulerRegistry: SchedulerRegistry,
     private putilityService: PutlityService,
-    private cutilityService: CurrentUtilityService
+    private cutilityService: CurrentUtilityService,
+    private emailService : EmailService
   ) {
 
     this.logger = new Logger(TasksService.name);
@@ -303,9 +305,15 @@ export class TasksService {
    */
   private async sendEmail(type, utility: PUtility){
     const rateprefix = type === 'gas' ? 'ccf' : 'kwh';
-    const emailbody = `<h1>New best ${type} rate found</h1>: <strong>${utility.name} </strong> at ${utility.rate}${rateprefix}, check out details @ ${utility.url}`;
-    const emailTitle = `New Best ${type} Rate Alert from your PowerSwitch Instance`;
+    const emailbody = `<h1>New best ${type} rate found</h1><h3>Supplier:</h3><strong>${utility.name}</strong> at ${utility.rate} ${rateprefix}, check out details <a href="${utility.url}">@ ${utility.url}</a>`;
+    const emailTitle = `New Best ${type.toUpperCase()} Rate Alert from your PowerSwitch Instance`;
     this.logger.debug('Sending email alert for new best '+ type + ' rate: ' + utility.name + ' at rate ' + utility.rate);
+    this.emailService.sendMail({
+      to: this.configService.get<string>('GMAIL_USER') || '',
+      subject: emailTitle,
+      html: emailbody
+    });
+
   }
 
   /**

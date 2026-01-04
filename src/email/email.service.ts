@@ -16,10 +16,19 @@ export class EmailService {
       return;
     }
 
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: { user, pass },
-    });
+    if (this.configService.get<string>('EMAIL_TEST')) {
+      // Custom SMTP server
+      this.transporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        auth: { user, pass },
+      });
+    } else {
+      this.transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: { user, pass },
+      });
+    }
   }
 
   async sendMail(options: {
