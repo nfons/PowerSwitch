@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import nodemailer, { Transporter } from 'nodemailer';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: Transporter;
+  private transporter: nodemailer.Transporter;
 
   constructor(private readonly configService: ConfigService) {
     const user = this.configService.get<string>('GMAIL_USER');
@@ -50,4 +50,3 @@ export class EmailService {
     }
   }
 }
-

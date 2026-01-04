@@ -88,7 +88,7 @@ describe('TasksService', () => {
   };
 
   const mockCurrentUtilityService = {
-    // Add any methods that CurrentUtilityService might have
+    findCurrent: jest.fn().mockResolvedValue({}),
   };
 
   beforeEach(async () => {
