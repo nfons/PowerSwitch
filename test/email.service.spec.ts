@@ -85,5 +85,15 @@ describe('EmailService', () => {
       expect.objectContaining({ from: 'Custom <custom@example.com>' }),
     );
   });
+
+  it('should initialize Ethereal SMTP transporter when EMAIL_TEST is set', async () => {
+    await createModule({ GMAIL_USER: 'ethereal@example.com', GMAIL_PASS: 'secret', EMAIL_TEST: 'true' });
+
+    expect((nodemailer as any).createTransport).toHaveBeenCalledWith({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      auth: { user: 'ethereal@example.com', pass: 'secret' },
+    });
+  });
 });
 

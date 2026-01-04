@@ -5,6 +5,7 @@ import { TasksService } from '../src/task.service';
 import { CronJob } from 'cron';
 import { PutlityService } from '../src/entities/putility/putlity.service';
 import { CurrentUtilityService } from '../src/entities/current_utility/current-utility.service';
+import { EmailService } from '../src/email/email.service';
 
 // Mock CronJob
 jest.mock('cron', () => {
@@ -91,6 +92,10 @@ describe('TasksService', () => {
     findCurrent: jest.fn().mockResolvedValue({}),
   };
 
+  const mockEmailService = {
+    sendMail: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
     jest
@@ -115,6 +120,10 @@ describe('TasksService', () => {
         {
           provide: CurrentUtilityService,
           useValue: mockCurrentUtilityService,
+        },
+        {
+          provide: EmailService,
+          useValue: mockEmailService,
         },
       ],
     }).compile();
@@ -165,6 +174,10 @@ describe('TasksService', () => {
             provide: CurrentUtilityService,
             useValue: mockCurrentUtilityService,
           },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
@@ -192,6 +205,10 @@ describe('TasksService', () => {
           {
             provide: CurrentUtilityService,
             useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -223,6 +240,10 @@ describe('TasksService', () => {
           {
             provide: CurrentUtilityService,
             useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -261,6 +282,10 @@ describe('TasksService', () => {
             provide: CurrentUtilityService,
             useValue: mockCurrentUtilityService,
           },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
@@ -288,6 +313,10 @@ describe('TasksService', () => {
           {
             provide: CurrentUtilityService,
             useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -319,6 +348,10 @@ describe('TasksService', () => {
           {
             provide: CurrentUtilityService,
             useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -354,6 +387,10 @@ describe('TasksService', () => {
             provide: CurrentUtilityService,
             useValue: mockCurrentUtilityService,
           },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
@@ -380,6 +417,10 @@ describe('TasksService', () => {
           {
             provide: CurrentUtilityService,
             useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -414,6 +455,10 @@ describe('TasksService', () => {
             {
               provide: CurrentUtilityService,
               useValue: mockCurrentUtilityService,
+            },
+            {
+              provide: EmailService,
+              useValue: mockEmailService,
             },
           ],
         }).compile();
