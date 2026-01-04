@@ -9,6 +9,7 @@ import * as cheerio from 'cheerio';
 import { PutlityService } from './entities/putility/putlity.service';
 import { PUtility } from './entities/putility/putility.entity';
 import { CurrentUtilityService } from './entities/current_utility/current-utility.service';
+import { CurrentUtility } from './entities/current_utility/currentUtility.entity';
 
 @Injectable()
 export class TasksService {
@@ -44,6 +45,13 @@ export class TasksService {
   onModuleInit(){
     this.getUtilityRates();
   }
+
+  /**
+   * Generates a Google search URL for the provided search term.
+   *
+   * @param {string} term - The search term to be used in the Google search query.
+   * @return {string} The encoded Google search URL containing the search term.
+   */
   private getGoogleUrl(term: string) {
     return `https://www.google.com/search?q=${encodeURIComponent(term)}`;
   }
@@ -126,6 +134,13 @@ export class TasksService {
       }
     }
   }
+
+  /**
+   * Fetches utility rate data from a CSV file based on the specified type.
+   *
+   * @param {string} type - The type of utility rate data to fetch (e.g., 'gas' or 'electric').
+   * @private
+   */
   private async fetchCSV(type: string) {
     const URL =
       type === 'gas'
@@ -238,6 +253,12 @@ export class TasksService {
     }
   }
 
+  /**
+   * Fetches utility rate data from a Web browser based on the specified type.
+   *
+   * @param {string} type - The type of utility rate data to fetch (e.g., 'gas' or 'electric').
+   * @private
+   */
   private async fetchWeb(type: string) {
     this.logger.debug('Fetching utility rates from web API for type:'+ type);
     // 1. Launch Browser
@@ -275,9 +296,24 @@ export class TasksService {
     await browser.close();
     return results;
   }
+
+  /*
+   Email alert for new best utility rate
+   using nodemailer
+   */
   private async sendEmail(type, utility: PUtility){
-    return;
+    const emailbody = `New best ${type} rate found: ${utility.name} at ${utility.rate}, check out details @ ${utility.url}`;
+    const emailTitle = `New Best ${type} Rate Alert from your PowerSwitch Instance`;
+    this.logger.debug('Sending email alert for new best '+ type + ' rate: ' + utility.name + ' at rate ' + utility.rate);
   }
+
+  /**
+   * Retrieves utility rates for gas and electricity from either a CSV file or via a web call,
+   * based on the configured API type. After retrieving the rates, the method compares them to
+   * current rates and potentially sends alerts if new best rates are identified.
+   *
+   * @return {Promise<void>} A Promise that resolves when the utility rate processing and comparison are complete.
+   */
   public async getUtilityRates() {
     // reset current rates, so we don't need to fetch from db
     this.currentGasRates = [];
@@ -322,6 +358,19 @@ export class TasksService {
     const bestGasRate = this.currentGasRates[0];
     const bestElectricRate = this.currentElectricRates[0];
 
+    const currentElectric: any = await this.cutilityService.findCurrent('electric');
+    const currentGas: any = await this.cutilityService.findCurrent('gas');
+
+    if(currentGas === null || currentGas?.rate > bestGasRate?.rate) {
+      this.logger.debug(`New best gas rate found: ${bestGasRate.name} at rate ${bestGasRate.rate}`);
+      // send email alert
+      this.sendEmail('gas', bestGasRate);
+    }
+    if(currentElectric === null || currentElectric?.rate > bestElectricRate?.rate) {
+      this.logger.debug(`New best electric rate found: ${bestElectricRate.name} at rate ${bestElectricRate.rate}`);
+      // send email alert
+      this.sendEmail('electric', bestElectricRate);
+    }
 
   }
 }
