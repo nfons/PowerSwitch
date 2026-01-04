@@ -313,7 +313,6 @@ export class TasksService {
       subject: emailTitle,
       html: emailbody
     });
-
   }
 
   /**
