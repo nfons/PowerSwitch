@@ -10,6 +10,24 @@ jest.mock('nodemailer', () => {
       sendMail: jest.fn().mockResolvedValue({ messageId: 'test-id' }),
     })),
   };
+})
+
+jest.mock('@nestjs/common', () => {
+  const actual = jest.requireActual('@nestjs/common');
+
+  class MockLogger {
+    error = jest.fn();
+    log = jest.fn();
+    warn = jest.fn();
+    debug = jest.fn();
+    static error = jest.fn();
+    static overrideLogger = jest.fn();
+  }
+
+  return {
+    ...actual,
+    Logger: MockLogger,
+  };
 });
 
 import * as nodemailer from 'nodemailer';
