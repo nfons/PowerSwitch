@@ -302,7 +302,8 @@ export class TasksService {
    using nodemailer
    */
   private async sendEmail(type, utility: PUtility){
-    const emailbody = `New best ${type} rate found: ${utility.name} at ${utility.rate}, check out details @ ${utility.url}`;
+    const rateprefix = type === 'gas' ? 'ccf' : 'kwh';
+    const emailbody = `<h1>New best ${type} rate found</h1>: <strong>${utility.name} </strong> at ${utility.rate}${rateprefix}, check out details @ ${utility.url}`;
     const emailTitle = `New Best ${type} Rate Alert from your PowerSwitch Instance`;
     this.logger.debug('Sending email alert for new best '+ type + ' rate: ' + utility.name + ' at rate ' + utility.rate);
   }
