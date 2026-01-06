@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How To - PowerSwitch</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1> 💡 How To</h1>
+    <p class="tagline">Star Using Power Switch</p>
+  </div>
+</header>
+
+<nav>
+  <div class="container">
+    <a href="index.html">Home</a>
+    <a href="index.html#features">Features</a>
+    <a href="index.html#quick-start">Quick Start</a>
+    <a href="how-to.html">How To</a>
+    <a href="configuration.html">Configuration</a>
+    <a href="https://github.com/nfons/PowerSwitch" class="external_link">GitHub</a>
+  </div>
+</nav>
+
+<main class="container">
+  <section id="configuration-intro">
+    <h2>How To Use PowerSwitch</h2>
+    <p>Once Set up with the correct <a href="configuration.html">Configuration Options</a>, after the brief initial setup, power switch will pretty much be hands free </p>
+  </section>
+
+  <section id="required-config">
+    <h2>Initial Set up</h2>
+
+    <div class="doc-section">
+      <h3>Visit your power switch instance url  </h3>
+      (usually <a href="http://localhost:8080">http://localhost:8080</a>)
+
+
+      <div style="text-align: center; margin: 30px 0;">
+        <img src="images/firststart.png" alt="First time Startup" style="max-width: 500px; width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);">
+      </div>
+
+      <p> At first start up, you will see 'Best' Gas and Electric rates, but no current utility Rate (because you have not set them yet) </p>
+
+      <div class="note">
+        <strong>Note:</strong> Depending on how slow your internet connection is, it may take a minute or two for the rates to populate
+      </div>
+      <br/>
+      <h3>Create a new Current Utility Record</h3>
+      Most likely you will already have an existing utility provider. You will need to create a new record for your current utility rates to compare against the lowest rates found by PowerSwitch
+      You can find your current provider rate by visiting your distributor website and looking at your bill details.
+
+      <br/>
+      I.e for PECO, it can be found here: <img src="images/peco-bill.png" alt="PECO bill example" style="max-width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);">
+
+      <ul>
+        <li>Click on Add Current Utility
+          <ul>
+            <li><img src="images/add-manual.png" alt="Add Current Utility button" style="max-width: 500px; width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);"></li>
+          </ul>
+        </li>
+        <li>Fill out the form with the following fields:
+          <ul>
+            <li>Utility Name</li>
+            <li>Utility Type (Gas or Electric)</li>
+            <li>Utility Rate</li>
+            <li>Duration (in months) - optional</li>
+            <li><img src="images/add-manual-form.png" alt="Add Current Utility form example" style="max-width: 500px; width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);"></li>
+          </ul>
+        </li>
+      </ul>
+
+      <p>After the form is submitted, you will see your new utility rate added to the list of current utilities. In addition, you can now automatically compare your current utility rates against the lowest rates found by PowerSwitch.</p>
+
+      <h4>Better Rate Found</h4>
+      <p>If a better rate than your current utility is found, you will receive an email with the details.</p>
+      <p> In addition, the frontend will display a "better rate" icon on the utility rate card</p>
+      <img src="images/best-rate.png" alt="Better rate icon example" style="max-width: 500px; width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);">
+
+      <h4>Save Better Rate from rate card</h4>
+      Clicking on the Best Rate Card will save the rate as your current utility rate. This will update the rate card to show the new rate and remove the "better rate" icon.
+      <img src="images/clickcard.png" alt="Click rate card to save" style="max-width: 500px; width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);">
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <p>&copy; 2024 PowerSwitch. Licensed under GPLv3.</p>
+    <p>
+      <a href="https://github.com/nfons/PowerSwitch">GitHub</a> |
+      <a href="https://github.com/nfons/PowerSwitch/issues">Issues</a> |
+      <a href="https://github.com/nfons/PowerSwitch/blob/main/README.md">Documentation</a>
+    </p>
+  </div>
+</footer>
+</body>
+</html>
