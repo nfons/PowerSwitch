@@ -1,343 +1,323 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import React from 'react';
+import { render, screen, waitFor, within, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
 
-// Mock fetch globally
-global.fetch = jest.fn();
 
-describe('App Component', () => {
+// Base Values for responses
+const bestGas = { id: 1, name: 'Gas Saver', type: 'Gas', rate: 0.12345, rateLength: 12, createdAt: new Date().toISOString() };
+const bestElectric = { id: 2, name: 'Spark Deal', type: 'Electric', rate: 0.23456, rateLength: 6, url: 'https://example.com' };
+const currentGas = { id: 10, name: 'Current Gas', type: 'Gas', rate: 0.34567, duration: new Date().toISOString() };
+const currentElectric = { id: 11, name: 'Current Electric', type: 'Electric', rate: 0.45678, duration: new Date().toISOString() };
+
+// Helper to mock fetch responses sequence based on URL
+function createFetchMock(routes) {
+  return jest.fn(async (url, options) => {
+    const route = routes.find(r => (typeof r.match === 'function' ? r.match(url, options) : url.includes(r.match)));
+    if (!route) {
+      throw new Error(`Unmocked fetch call: ${url}`);
+    }
+    if (route.error) {
+      return {
+        ok: false,
+        status: route.status || 500,
+        json: async () => ({ message: route.error }),
+        text: async () => route.error,
+      };
+    }
+    return {
+      ok: true,
+      status: route.status || 200,
+      json: async () => route.json,
+      text: async () => JSON.stringify(route.json),
+    };
+  });
+}
+
+describe('App', () => {
+  beforeAll(() => {
+    jest.setTimeout(15000);
+  });
+
   beforeEach(() => {
-    fetch.mockClear();
-    // Default mock for GET /api/config
-    fetch.mockImplementation((url) => {
-      if (url === '/api/config' || url.includes('/api/config')) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => [],
-        });
-      }
-      return Promise.reject(new Error('Unknown URL'));
-    });
+    process.env.REACT_APP_API_HOST = '';
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
-  describe('Initial Render', () => {
-    test('renders form heading', async () => {
-      render(<App />);
-      expect(screen.getByText('Add Current Utility')).toBeInTheDocument();
+  test('shows loading states and then renders best rates and configs after successful fetch', async () => {
+    global.fetch = createFetchMock([
+      { match: '/api/putility/best/gas', json: bestGas },
+      { match: '/api/putility/best/electric', json: bestElectric },
+      { match: '/api/config/current/gas', json: currentGas },
+      { match: '/api/config/current/electric', json: currentElectric },
+    ]);
+
+    render(<App />);
+
+    // Loading states initially
+    expect(screen.getAllByText(/Loading/i).length).toBeGreaterThan(0);
+
+    // Wait for best gas card wrapper
+    const gasHeading = await screen.findByRole('heading', { name: /Best Gas Rate/i });
+    const gasWrapper = gasHeading.closest('.rate-card-wrapper');
+
+    // Wait for loading to disappear inside gas wrapper
+    await waitFor(() => {
+      expect(within(gasWrapper).queryByText(/Loading/i)).not.toBeInTheDocument();
     });
 
-    test('renders all form fields', async () => {
-      render(<App />);
+    // Best gas utility card content (scoped)
+    const gasCard = within(gasWrapper).getByRole('heading', { name: 'Gas Saver' });
+    expect(gasCard).toBeInTheDocument();
+    expect(within(gasWrapper).getByText(/Type:/i)).toBeInTheDocument();
+    // exact match to avoid section heading
+    expect(within(gasWrapper).getByText(/^Gas$/)).toBeInTheDocument();
+    expect(within(gasWrapper).getByText('$0.12345')).toBeInTheDocument();
 
-      await waitFor(() => {
-        expect(screen.getByLabelText(/Current Utility Name/i)).toBeInTheDocument();
-        expect(screen.getByText(/Utility Type/i)).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /Gas/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /Electricity/i })).toBeInTheDocument();
-        expect(screen.getByLabelText(/Rate per/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Duration/i)).toBeInTheDocument();
-      });
+    // Best electric utility card content (scoped)
+    const electricHeading = await screen.findByRole('heading', { name: /Best Electric Rate/i });
+    const electricWrapper = electricHeading.closest('.rate-card-wrapper');
+    await waitFor(() => {
+      expect(within(electricWrapper).queryByText(/Loading/i)).not.toBeInTheDocument();
     });
+    const spark = within(electricWrapper).getByRole('heading', { name: 'Spark Deal' });
+    expect(spark).toBeInTheDocument();
+    expect(within(electricWrapper).getByText('$0.23456')).toBeInTheDocument();
+    // Link present when url exists
+    expect(within(electricWrapper).getByRole('link', { name: /View Details/i })).toHaveAttribute('href', 'https://example.com');
 
-    test('renders submit button', async () => {
-      render(<App />);
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Save Current Utility Record/i })).toBeInTheDocument();
-      });
-    });
+    // Configs section renders current gas and electric cards
+    const configsHeading = screen.getByRole('heading', { name: /Current Utility Rates/i });
+    expect(configsHeading).toBeInTheDocument();
 
-    test('fetches configs on mount', async () => {
-      render(<App />);
+    // Check for current gas
+    expect(await screen.findByText('Current Gas')).toBeInTheDocument();
+    expect(screen.getByText('$0.34567')).toBeInTheDocument();
 
-      await waitFor(() => {
-        expect(fetch).toHaveBeenCalledWith('/api/config');
-      });
-    });
+    // Check for current electric
+    expect(await screen.findByText('Current Electric')).toBeInTheDocument();
+    expect(screen.getByText('$0.45678')).toBeInTheDocument();
   });
 
-  describe('Type Selection Buttons', () => {
-    test('clicking Gas button selects Gas type', async () => {
-      render(<App />);
+  test('handles error states for best rates', async () => {
+    // Mock the fetch responses
+    global.fetch = createFetchMock([
+      { match: '/api/putility/best/gas', error: 'Failed to fetch best gas rate' },
+      { match: '/api/putility/best/electric', error: 'Failed to fetch best electric rate' },
+      { match: '/api/config/current/gas', json: null },
+      { match: '/api/config/current/electric', json: null },
+    ]);
 
-      await waitFor(() => screen.getByText('Gas'));
+    // Mock console error
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-      const gasButton = screen.getByRole('button', { name: /Gas/i });
-      await userEvent.click(gasButton);
+    render(<App />);
 
-      expect(gasButton).toHaveClass('type-button active');
-    });
-
-    test('clicking Electricity button selects Electricity type', async () => {
-      render(<App />);
-
-      await waitFor(() => screen.getByText('Electricity'));
-
-      const electricityButton = screen.getByRole('button', { name: /Electricity/i });
-      await userEvent.click(electricityButton);
-
-      expect(electricityButton).toHaveClass('active');
-    });
-
-    test('type buttons are mutually exclusive', async () => {
-      render(<App />);
-
-      await waitFor(() => screen.getByText('Gas'));
-
-      const gasButton = screen.getByRole('button', { name: /Gas/i });
-      const electricityButton = screen.getByRole('button', { name: /Electricity/i });
-
-      await userEvent.click(gasButton);
-      expect(gasButton).toHaveClass('active');
-      expect(electricityButton).not.toHaveClass('active');
-
-      await userEvent.click(electricityButton);
-      expect(electricityButton).toHaveClass('active');
-      expect(gasButton).not.toHaveClass('active');
-    });
+    expect(await screen.findAllByText(/Error:/i)).toHaveLength(2);
+    expect(screen.getByText(/Failed to fetch best gas rate/i)).toBeInTheDocument();
+    expect(screen.getByText(/Failed to fetch best electric rate/i)).toBeInTheDocument();
   });
 
-  describe('Form Validation', () => {
-    test('shows error when submitting empty form', async () => {
-      render(<App />);
+  test('shows empty states when no utilities returned', async () => {
+    global.fetch = createFetchMock([
+      { match: '/api/putility/best/gas', json: null },
+      { match: '/api/putility/best/electric', json: null },
+      { match: '/api/config/current/gas', json: null },
+      { match: '/api/config/current/electric', json: null },
+    ]);
 
-      await waitFor(() => screen.getByRole('button', { name: /Save Current Utility Record/i }));
+    render(<App />);
 
-      const submitButton = screen.getByRole('button', { name: /Save Current Utility Record/i });
-      await userEvent.click(submitButton);
-
-      await waitFor(() => {
-        const errorSpan = document.querySelector('.status');
-        expect(errorSpan).not.toBeNull();
-      });
-    });
-
-    test('shows error when rate is not a number', async () => {
-      render(<App />);
-
-      await waitFor(() => screen.getByLabelText(/Current Utility Name/i));
-
-      const nameInput = screen.getByLabelText(/Current Utility Name/i);
-      const rateInput = screen.getByLabelText(/Rate per/i);
-      const gasButton = screen.getByRole('button', { name: /Gas/i });
-      const submitButton = screen.getByRole('button', { name: /Save Current Utility Record/i });
-
-      await userEvent.type(nameInput, 'Test Utility');
-      await userEvent.click(gasButton);
-      await userEvent.type(rateInput, 'abc');
-      await userEvent.click(submitButton);
-
-      await waitFor(() => {
-        const errorSpan = document.querySelector('.status');
-        expect(errorSpan).not.toBeNull();
-      });
-    });
+    expect(await screen.findAllByText(/No data available/i)).toHaveLength(2);
+    expect(await screen.findAllByText(/No (gas|electric) configuration saved yet/i)).toHaveLength(2);
   });
 
-  describe('Form Submission', () => {
-    test('submits form successfully with valid data', async () => {
+  test('opens Add Current Utility modal and validates form', async () => {
+    global.fetch = createFetchMock([
+      { match: '/api/putility/best/gas', json: bestGas },
+      { match: '/api/putility/best/electric', json: bestElectric },
+      { match: '/api/config/current/gas', json: null },
+      { match: '/api/config/current/electric', json: null },
+    ]);
 
-      fetch.mockImplementation((url, options) => {
-        if (url === '/api/config' && options?.method === 'PUT') {
-          return Promise.resolve({
-            ok: true,
-            json: async () => ({ id: 1, name: 'Test Utility', type: 'Gas', rate: 0.12 }),
-          });
-        }
-        if (url === '/api/config') {
-          return Promise.resolve({
-            ok: true,
-            json: async () => [],
-          });
-        }
-        return Promise.reject(new Error('Unknown URL'));
-      });
+    render(<App />);
 
-      render(<App />);
+    const addBtn = screen.getByRole('button', { name: /Add Current Utility/i });
+    await userEvent.click(addBtn);
 
-      await waitFor(() => screen.getByLabelText(/Current Utility Name/i));
+    // Modal visible
+    const modalHeading = screen.getByRole('heading', { name: /Add Current Utility/i });
+    expect(modalHeading).toBeInTheDocument();
 
-      const nameInput = screen.getByLabelText(/Current Utility Name/i);
-      const rateInput = screen.getByLabelText(/Rate per/i);
-      const gasButton = screen.getByRole('button', { name: /Gas/i });
-      const submitButton = screen.getByRole('button', { name: /Save Current Utility Record/i });
+    // Submit with empty required fields -> error (bypass HTML5 required by dispatching submit)
+    const form = modalHeading.closest('.modal-content').querySelector('form');
+    fireEvent.submit(form);
+    expect(await screen.findByText(/Name, type, and rate are required/i)).toBeInTheDocument();
 
-      await userEvent.type(nameInput, 'Test Utility');
-      await userEvent.click(gasButton);
-      await userEvent.type(rateInput, '0.12');
-      await userEvent.click(submitButton);
+    // Fill invalid rate (non-numeric)
+    const nameInput = screen.getByLabelText(/Current Utility Name/i);
+    await userEvent.type(nameInput, 'My Utility');
 
-      await waitFor(() => {
-        expect(fetch).toHaveBeenCalledWith('/api/config', expect.objectContaining({
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: 'Test Utility',
-            type: 'Gas',
-            rate: 0.12,
-          }),
-        }));
-      });
+    const rateInput = screen.getByLabelText(/Rate per/i);
+    fireEvent.change(rateInput, { target: { value: 'abc' } });
+    fireEvent.submit(form);
+    // For type="number" inputs, invalid strings are rejected and value remains empty
+    // so expect the required-fields error message again
+    expect(await screen.findByText(/Name, type, and rate are required/i)).toBeInTheDocument();
+  });
 
-      await waitFor(() => {
-        expect(screen.getByText(/Current Rate stored successfully/i)).toBeInTheDocument();
-      });
+  test('submits valid form, saves config, resets form, reloads configs, and closes modal after timeout', async () => {
+    const fetchMock = jest.fn(async (url, options) => {
+      if (url.includes('/api/putility/best/gas')) return { ok: true, json: async () => bestGas };
+      if (url.includes('/api/putility/best/electric')) return { ok: true, json: async () => bestElectric };
+      if (url.includes('/api/config/current/gas')) return { ok: true, json: async () => null };
+      if (url.includes('/api/config/current/electric')) return { ok: true, json: async () => null };
+      if (url.includes('/api/config') && options && options.method === 'PUT') {
+        // echo back success
+        return { ok: true, json: async () => ({ success: true }) };
+      }
+      throw new Error(`Unexpected call: ${url}`);
     });
+    global.fetch = fetchMock;
 
-    test('clears form after successful submission', async () => {
+    render(<App />);
 
-      fetch.mockImplementation((url, options) => {
-        if (url === '/api/config' && options?.method === 'PUT') {
-          return Promise.resolve({
-            ok: true,
-            json: async () => ({ id: 1, name: 'Test Utility', type: 'Gas', rate: 0.12 }),
-          });
-        }
-        if (url === '/api/config') {
-          return Promise.resolve({
-            ok: true,
-            json: async () => [],
-          });
-        }
-        return Promise.reject(new Error('Unknown URL'));
-      });
+    // Open modal
+    await userEvent.click(screen.getByRole('button', { name: /Add Current Utility/i }));
+    const modalHeading = screen.getByRole('heading', { name: /Add Current Utility/i });
+    expect(modalHeading).toBeInTheDocument();
 
-      render(<App />);
+    // Fill form
+    await userEvent.type(screen.getByLabelText(/Current Utility Name/i), 'My Utility');
+    const rateInput = screen.getByLabelText(/Rate per/i);
+    await userEvent.clear(rateInput);
+    await userEvent.type(rateInput, '0.5');
+    const durationInput = screen.getByLabelText(/Duration \(how long is this rate good for\)/i);
+    await userEvent.type(durationInput, '2025-01-01T00:00');
 
-      await waitFor(() => screen.getByLabelText(/Current Utility Name/i));
+    // Submit (bypass HTML5 required with fireEvent)
+    const form2 = modalHeading.closest('.modal-content').querySelector('form');
+    fireEvent.submit(form2);
 
-      const nameInput = screen.getByLabelText(/Current Utility Name/i);
-      const rateInput = screen.getByLabelText(/Rate per/i);
-      const gasButton = screen.getByRole('button', { name: /Gas/i });
-      const submitButton = screen.getByRole('button', { name: /Save Current Utility Record/i });
+    // Status success appears
+    expect(await screen.findByText(/Current Rate stored successfully/i)).toBeInTheDocument();
 
-      await userEvent.type(nameInput, 'Test Utility');
-      await userEvent.click(gasButton);
-      await userEvent.type(rateInput, '0.12');
-      await userEvent.click(submitButton);
+    // Wait for modal to close by timeout (1.5s)
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /Add Current Utility/i })).not.toBeInTheDocument();
+    }, { timeout: 3000 });
+  });
 
-      await waitFor(() => {
-        expect(screen.getByText(/Current Rate stored successfully/i)).toBeInTheDocument();
-      });
+  test('clicking a best rate card opens confirm modal and saving calls PUT with converted payload', async () => {
+    const bestGas = { id: 1, name: 'Gas Saver', type: 'Gas', rate: 0.12345, rateLength: 12 };
 
-      expect(nameInput).toHaveValue('');
-      expect(rateInput).toHaveValue(null);
+    const fetchSpy = jest.fn(async (url, options) => {
+      if (url.includes('/api/putility/best/gas')) return { ok: true, json: async () => bestGas };
+      if (url.includes('/api/putility/best/electric')) return { ok: true, json: async () => bestElectric };
+      if (url.includes('/api/config/current/gas')) return { ok: true, json: async () => null };
+      if (url.includes('/api/config/current/electric')) return { ok: true, json: async () => null };
+      if (url.includes('/api/config') && options && options.method === 'PUT') return { ok: true, json: async () => ({ ok: true }) };
+      throw new Error(`Unexpected call: ${url}`);
     });
+    global.fetch = fetchSpy;
 
-    test('handles submission error', async () => {
+    render(<App />);
 
-      fetch.mockImplementation((url, options) => {
-        if (url === '/api/config' && options?.method === 'PUT') {
-          return Promise.resolve({
-            ok: false,
-            text: async () => 'Server error',
-          });
-        }
-        if (url === '/api/config') {
-          return Promise.resolve({
-            ok: true,
-            json: async () => [],
-          });
-        }
-        return Promise.reject(new Error('Unknown URL'));
-      });
+    // Click the best gas card (wait for it to render)
+    const gasHeading = await screen.findByRole('heading', { name: /Best Gas Rate/i });
+    const gasWrapper = gasHeading.closest('.rate-card-wrapper');
+    await waitFor(() => {
+      expect(within(gasWrapper).queryByText(/Loading/i)).not.toBeInTheDocument();
+    });
+    const gasCardTitle = within(gasWrapper).getByRole('heading', { name: 'Gas Saver' });
+    await userEvent.click(gasCardTitle);
 
-      render(<App />);
+    // Confirm modal appears
+    expect(screen.getByRole('heading', { name: /Are you sure you want to save this utility\?/i })).toBeInTheDocument();
 
-      await waitFor(() => screen.getByLabelText(/Current Utility Name/i));
+    // Click Save this rate
+    await userEvent.click(screen.getByRole('button', { name: /Save this rate/i }));
 
-      const nameInput = screen.getByLabelText(/Current Utility Name/i);
-      const rateInput = screen.getByLabelText(/Rate per/i);
-      const gasButton = screen.getByRole('button', { name: /Gas/i });
-      const submitButton = screen.getByRole('button', { name: /Save Current Utility Record/i });
+    // Expect a PUT with converted payload
+    const putCall = fetchSpy.mock.calls.find(c => c[0].includes('/api/config') && c[1] && c[1].method === 'PUT');
+    expect(putCall).toBeTruthy();
+    const body = JSON.parse(putCall[1].body);
+    expect(body.name).toBe(bestGas.name);
+    expect(body.type).toBe('Gas');
+    expect(body.rate).toBe(bestGas.rate);
+    expect(typeof body.duration).toBe('string');
 
-      await userEvent.type(nameInput, 'Test Utility');
-      await userEvent.click(gasButton);
-      await userEvent.type(rateInput, '0.12');
-      await userEvent.click(submitButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Server error/i)).toBeInTheDocument();
-      });
+    // Modal closes after save
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /Are you sure you want to save this utility\?/i })).not.toBeInTheDocument();
     });
   });
 
-  describe('Configs Display', () => {
-    test('displays loading state initially', () => {
-      render(<App />);
-      expect(screen.getByText(/Loading configurations/i)).toBeInTheDocument();
+  test('shows Best badge and tooltip for Gas when isBestGas is true', async () => {
+    // Mock best rates lower than current to trigger isBestGas true
+    const bestGas = { id: 1, name: 'Gas Saver', type: 'Gas', rate: 0.10, rateLength: 12 };
+    const bestElectric = { id: 2, name: 'Spark Deal', type: 'Electric', rate: 0.20, rateLength: 6 };
+    const currentGas = { id: 10, name: 'My Gas', type: 'gas', rate: 0.50, duration: new Date().toISOString() };
+    const currentElectric = { id: 11, name: 'My Electric', type: 'electric', rate: 0.18, duration: new Date().toISOString() };
+
+    global.fetch = jest.fn(async (url) => {
+      if (url.includes('/api/putility/best/gas')) return { ok: true, json: async () => bestGas };
+      if (url.includes('/api/putility/best/electric')) return { ok: true, json: async () => bestElectric };
+      if (url.includes('/api/config/current/gas')) return { ok: true, json: async () => currentGas };
+      if (url.includes('/api/config/current/electric')) return { ok: true, json: async () => currentElectric };
+      throw new Error(`Unexpected url: ${url}`);
     });
 
-    test('displays empty state when no configs', async () => {
-      render(<App />);
+    render(<App />);
 
-      await waitFor(() => {
-        expect(screen.getByText(/No configurations saved yet/i)).toBeInTheDocument();
-      });
+    const gasHeading = await screen.findByRole('heading', { name: /Best Gas Rate/i });
+    const gasWrapper = gasHeading.closest('.rate-card-wrapper');
+    await waitFor(() => {
+      expect(within(gasWrapper).queryByText(/Loading/i)).not.toBeInTheDocument();
     });
 
-    test('displays configs when available', async () => {
-      fetch.mockImplementation((url) => {
-        if (url === '/api/config' || url.includes('/api/config')) {
-          return Promise.resolve({
-            ok: true,
-            json: async () => [
-              { id: 1, name: 'Gas Utility', type: 'Gas', rate: 0.12 },
-              { id: 2, name: 'Electric Utility', type: 'Electricity', rate: 0.15 },
-            ],
-          });
-        }
-        return Promise.reject(new Error('Unknown URL'));
-      });
 
-      render(<App />);
+    const gasCard = within(gasWrapper).getByRole('heading', { name: 'Gas Saver' }).closest('.utility-card');
+    expect(within(gasWrapper).getByText('Best')).toBeInTheDocument();
 
-      await waitFor(() => {
-        expect(screen.getByText('Gas Utility')).toBeInTheDocument();
-        expect(screen.getByText('Electric Utility')).toBeInTheDocument();
-      });
+    // Tooltip should appear on hover
+    const tooltip = within(gasWrapper).getByRole('tooltip');
+
+    await userEvent.hover(gasCard);
+    expect(tooltip).toBeInTheDocument();
+  });
+
+  test('shows Best badge and tooltip for Electric when isBestElectric is true', async () => {
+    //Mocks like above
+    const bestGas = { id: 1, name: 'Gas Saver', type: 'Gas', rate: 0.10, rateLength: 12 };
+    const bestElectric = { id: 2, name: 'Spark Deal', type: 'Electric', rate: 0.15, rateLength: 6 };
+    const currentGas = { id: 10, name: 'My Gas', type: 'gas', rate: 0.05, duration: new Date().toISOString() };
+    const currentElectric = { id: 11, name: 'My Electric', type: 'electric', rate: 0.50, duration: new Date().toISOString() };
+
+    global.fetch = jest.fn(async (url) => {
+      if (url.includes('/api/putility/best/gas')) return { ok: true, json: async () => bestGas };
+      if (url.includes('/api/putility/best/electric')) return { ok: true, json: async () => bestElectric };
+      if (url.includes('/api/config/current/gas')) return { ok: true, json: async () => currentGas };
+      if (url.includes('/api/config/current/electric')) return { ok: true, json: async () => currentElectric };
+      throw new Error(`Unexpected url: ${url}`);
     });
 
-    test('refetches configs after successful submission', async () => {
+    render(<App />);
 
-      let callCount = 0;
-      fetch.mockImplementation((url, options) => {
-        if (url === '/api/config' && options?.method === 'PUT') {
-          return Promise.resolve({
-            ok: true,
-            json: async () => ({ id: 1, name: 'Test Utility', type: 'Gas', rate: 0.12 }),
-          });
-        }
-        if (url === '/api/config') {
-          callCount++;
-          return Promise.resolve({
-            ok: true,
-            json: async () => callCount === 1 ? [] : [{ id: 1, name: 'Test Utility', type: 'Gas', rate: 0.12 }],
-          });
-        }
-        return Promise.reject(new Error('Unknown URL'));
-      });
-
-      render(<App/>)
-
-      await waitFor(() => screen.getByLabelText(/Current Utility Name/i));
-
-      const nameInput = screen.getByLabelText(/Current Utility Name/i);
-      const rateInput = screen.getByLabelText(/Rate per/i);
-      const gasButton = screen.getByRole('button', { name: /Gas/i });
-      const submitButton = screen.getByRole('button', { name: /Save Current Utility Record/i });
-
-      await userEvent.type(nameInput, 'Test Utility');
-      await userEvent.click(gasButton);
-      await userEvent.type(rateInput, '0.12');
-      await userEvent.click(submitButton);
-       await waitFor(() => {
-         expect(fetch).toHaveBeenCalledTimes(3); // Initial fetch of current + put current+ refetch after submit
-      });
+    const electricHeading = await screen.findByRole('heading', { name: /Best Electric Rate/i });
+    const electricWrapper = electricHeading.closest('.rate-card-wrapper');
+    await waitFor(() => {
+      expect(within(electricWrapper).queryByText(/Loading/i)).not.toBeInTheDocument();
     });
+
+    const electricCard = within(electricWrapper).getByRole('heading', { name: 'Spark Deal' }).closest('.utility-card');
+    expect(within(electricWrapper).getByText('Best')).toBeInTheDocument();
+
+    const tooltip = within(electricWrapper).getByRole('tooltip');
+    await userEvent.hover(electricCard);
+    expect(tooltip).toBeInTheDocument();
   });
 });

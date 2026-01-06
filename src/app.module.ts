@@ -13,6 +13,7 @@ import { join } from 'path';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TasksService } from './task.service';
 import { ScheduleModule } from '@nestjs/schedule';
+import { EmailModule } from './email/email.module';
 
 const dbConfig = TypeOrmModule.forRootAsync({
   imports: [ConfigModule],
@@ -36,10 +37,12 @@ const dbConfig = TypeOrmModule.forRootAsync({
     ScheduleModule.forRoot(),
     PutlityModule,
     CurrentUtilityModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService, TasksService],
 })
 export class AppModule {
-  constructor(private dataSource: DataSource) {}
+  constructor(private dataSource: DataSource) {
+  }
 }

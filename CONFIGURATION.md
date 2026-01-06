@@ -18,5 +18,12 @@ After that, you will be taken to a page with your current rates, copy the url fr
 
 ## Optional ENV config params
 - `DB_TABLE`: The name of the database table to store power usage data. Default is `powertable.db`.
-- `CRON_TIME`: The cron schedule for running the power usage check. Default is `* * * * *` (every minute).
-- `API_TYPE`: The type of API to use for fetching power usage data. Default is `csv`.
+- `CRON_TIME`: The cron schedule for running the power usage check. Default is `0 0 10 * *` (once a month on the 10th day of the month).
+- `API_TYPE`: The type of API to use for fetching power usage data. Default is `web`.
+
+### Setting up Email Alerts.
+
+We currently use nodemailer to send alerts via email. You will need to provide your gmail credentials to enable this feature.
+checkout nodemailer documentation on the exact method [here](https://nodemailer.com/usage/using-gmail)
+- `GMAIL_USER`: The email address to send alerts to.
+- `GMAIL_PASS`: The password for the email account.

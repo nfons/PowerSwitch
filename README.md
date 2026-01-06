@@ -5,7 +5,7 @@ A NestJS-based application for managing and automating Utility Provider switchin
 ## Features
 
 - This will automtically parse (either via web or the CSV download option) current utility rates for PApower and PAgas.
-- It will select the cheapest provider and alert compare your current rate with that of the cheapest provider. and alert you if there is a cheaper option
+- It will select the cheapest provider and compare your current rate with that of the cheapest provider. and alert you if there is a cheaper option via an email drop
 
 
 ## Quick Start
@@ -49,33 +49,33 @@ Edit the `.env` file to customize your setup:
 
 ```env
 DB_TABLE=powertable.db
-CRON_TIME=* * * * *
+CRON_TIME=0 0 10 * *
 ELECTRIC_URL='https://www.papowerswitch.com/'
 API_TYPE=web
 GAS_URL='someurl.com'
+
+# optional
+GMAIL_USER=you@gmail.com
+GMAIL_PASS=yourAPP password
 ```
 
 **Run the application:**
 
 ```bash
-# Development mode with hot reload
-npm run start:dev
+# start the application
+npm run start
 
 # Production mode
 npm run build && npm run start:prod
 ```
 
 ## Development
+### API docs (Swagger)
 
-### Available Scripts
+The API is documented using Swagger (OpenAPI).
 
-```bash
-# Start development server
-npm run start:dev
-
-# Build the project
-npm run build
-```
+- Swagger UI: http://localhost:8080/docs
+- All API routes are prefixed with `/api` (for example: `GET /api/putlity`, `GET /api/putility/best/:type`).
 
 ### Project Structure
 
@@ -91,6 +91,8 @@ PowerSwitch/
 # Run unit tests
 npm run test
 
+# coverage tests
+npm run test:cov
 ```
 
 ## Docker Deployment

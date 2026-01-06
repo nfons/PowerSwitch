@@ -4,6 +4,8 @@ import { SchedulerRegistry, CronExpression } from '@nestjs/schedule';
 import { TasksService } from '../src/task.service';
 import { CronJob } from 'cron';
 import { PutlityService } from '../src/entities/putility/putlity.service';
+import { CurrentUtilityService } from '../src/entities/current_utility/current-utility.service';
+import { EmailService } from '../src/email/email.service';
 
 // Mock CronJob
 jest.mock('cron', () => {
@@ -86,8 +88,19 @@ describe('TasksService', () => {
     add: jest.fn().mockResolvedValue({}),
   };
 
+  const mockCurrentUtilityService = {
+    findCurrent: jest.fn().mockResolvedValue({}),
+  };
+
+  const mockEmailService = {
+    sendMail: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
+    jest
+      .spyOn(TasksService.prototype, 'onModuleInit')
+      .mockImplementation(() => undefined);
 
     testingModule = await Test.createTestingModule({
       providers: [
@@ -103,6 +116,14 @@ describe('TasksService', () => {
         {
           provide: PutlityService,
           useValue: mockPutlityService,
+        },
+        {
+          provide: CurrentUtilityService,
+          useValue: mockCurrentUtilityService,
+        },
+        {
+          provide: EmailService,
+          useValue: mockEmailService,
         },
       ],
     }).compile();
@@ -125,9 +146,9 @@ describe('TasksService', () => {
       expect(service).toBeDefined();
     });
 
-    it('should have default schedule set to EVERY_1ST_DAY_OF_MONTH_AT_NOON', () => {
+    it('should have default schedule set to 0 0 15 * *', () => {
       expect(service.schedule).toBe(
-        CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON,
+        '0 0 15 * *',
       );
     });
 
@@ -148,6 +169,14 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -172,6 +201,14 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -199,6 +236,14 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -233,6 +278,14 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
@@ -257,12 +310,20 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
       const service = module.get<TasksService>(TasksService);
       expect(service.schedule).toBe(
-        CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON,
+        '0 0 15 * *'
       );
     });
 
@@ -284,12 +345,20 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
       const service = module.get<TasksService>(TasksService);
       expect(service.schedule).toBe(
-        CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON,
+        '0 0 15 * *',
       );
     });
   });
@@ -314,6 +383,14 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
@@ -336,6 +413,14 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -366,6 +451,14 @@ describe('TasksService', () => {
             {
               provide: PutlityService,
               useValue: mockPutlityService,
+            },
+            {
+              provide: CurrentUtilityService,
+              useValue: mockCurrentUtilityService,
+            },
+            {
+              provide: EmailService,
+              useValue: mockEmailService,
             },
           ],
         }).compile();
@@ -525,8 +618,8 @@ describe('TasksService', () => {
 
   describe('getUtilityRates', () => {
     beforeEach(() => {
-      jest.spyOn(service as any, 'fetchCSV').mockResolvedValue(undefined);
-      jest.spyOn(service as any, 'fetchWeb').mockResolvedValue(undefined);
+      jest.spyOn(service as any, 'fetchCSV').mockResolvedValue([]);
+      jest.spyOn(service as any, 'fetchWeb').mockResolvedValue([]);
     });
 
     it('should use web approach when API_TYPE is web', async () => {
@@ -608,7 +701,7 @@ describe('TasksService', () => {
       expect(service['fetchCSV']).not.toHaveBeenCalled();
     });
 
-    it('should default to CSV approach when API_TYPE is not set', async () => {
+    it('should default to WEB approach when API_TYPE is not set', async () => {
       mockConfigService.get.mockImplementation((key: string) => {
         if (key === 'GAS_URL') return 'https://example.com/gas.csv';
         return undefined;
@@ -616,7 +709,7 @@ describe('TasksService', () => {
 
       await service['getUtilityRates']();
 
-      expect(service['fetchCSV']).toHaveBeenCalledWith('gas');
+      expect(service['fetchWeb']).toHaveBeenCalledWith('gas');
     });
   });
   describe('getGoogleUrl', () => {
@@ -1052,6 +1145,62 @@ describe('TasksService', () => {
 
       expect(distCardMock.each).toHaveBeenCalled();
       expect(mockBrowser.close).toHaveBeenCalled();
+    });
+
+    it('should use peco.com URL for PECO provider', () => {
+      const htmlContent = `
+        <html>
+          <body>
+            <div class="rate-card">
+              <div class="name">PECO</div>
+              <div>$0.10 per kwh</div>
+              <div>Term Length: 12 Months</div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      const cheerio = jest.requireActual('cheerio');
+      const $ = cheerio.load(htmlContent);
+      const element = $('.rate-card').get(0);
+      const results: any = [];
+
+      service['getDataFromNode'](element, $, 'electric', results);
+
+      expect(mockPutlityService.add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'PECO',
+          url: 'https://www.peco.com/',
+        }),
+      );
+    });
+
+    it('should use peco.com URL for provider with PECO in name', () => {
+      const htmlContent = `
+        <html>
+          <body>
+            <div class="rate-card">
+              <div class="name">PECO Energy Company</div>
+              <div>$0.09 per kwh</div>
+              <div>Term Length: 6 Months</div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      const cheerio = jest.requireActual('cheerio');
+      const $ = cheerio.load(htmlContent);
+      const element = $('.rate-card').get(0);
+      const results: any = [];
+
+      service['getDataFromNode'](element, $, 'electric', results);
+
+      expect(mockPutlityService.add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'PECO Energy Company',
+          url: 'https://www.peco.com/',
+        }),
+      );
     });
 
     it('should extract price from dollar amount regex', async () => {

@@ -8,15 +8,23 @@ import { PUtility } from '../src/entities/putility/putility.entity';
 import { CurrentUtility } from '../src/entities/current_utility/currentUtility.entity';
 import { PutlityService } from '../src/entities/putility/putlity.service';
 import { CurrentUtilityService } from '../src/entities/current_utility/current-utility.service';
+import { TasksService } from '../src/task.service';
+
+
+
+jest.setTimeout(15000);
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
   let putlityService: PutlityService;
   let utilityConfigService: CurrentUtilityService;
-  let seededUtilities: PUtility[] = [];
-  let seededConfigs: CurrentUtility[] = [];
+  let mockTasksService: { onModuleInit: jest.Mock };
+  let seededUtilities: PUtility[];
+  let seededConfigs: CurrentUtility[];
 
   beforeEach(async () => {
+    mockTasksService = { onModuleInit: jest.fn() };
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
@@ -29,6 +37,8 @@ describe('AppController (e2e)', () => {
         AppModule,
       ],
     })
+      .overrideProvider(TasksService)
+      .useValue(mockTasksService)
       .overrideModule(AppModule)
       .useModule(AppModule)
       .compile();
@@ -62,7 +72,7 @@ describe('AppController (e2e)', () => {
     }
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     if (app) {
       await app.close();
     }
@@ -133,6 +143,21 @@ describe('AppController (e2e)', () => {
       expect(res.body.fields.region).toBe('east');
       const persisted = await utilityConfigService.findOne(res.body.id);
       expect(persisted).not.toBeNull();
+    });
+
+    it('/config/current/:type (GET) should return the latest config for given type', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/config/current/electricity')
+        .expect(200);
+      // Expect the most recently inserted seeded config for type 'electricity' which has region 'south'
+      expect(res.body).toMatchObject({ fields: { region: 'south' }, type: 'electricity' });
+    });
+
+    it('/config/current/:type (GET) should return 404 when type not found', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/config/current/gas')
+        .expect(404);
+      expect(res.body).toMatchObject({ statusCode: 404, error: 'Not Found' });
     });
   });
 });
