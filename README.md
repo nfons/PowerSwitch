@@ -5,7 +5,7 @@ A NestJS-based application for managing and automating Utility Provider switchin
 ## Features
 
 - This will automtically parse (either via web or the CSV download option) current utility rates for PApower and PAgas.
-- It will select the cheapest provider and alert compare your current rate with that of the cheapest provider. and alert you if there is a cheaper option
+- It will select the cheapest provider and compare your current rate with that of the cheapest provider. and alert you if there is a cheaper option via an email drop
 
 
 ## Quick Start
@@ -53,6 +53,10 @@ CRON_TIME=0 0 10 * *
 ELECTRIC_URL='https://www.papowerswitch.com/'
 API_TYPE=web
 GAS_URL='someurl.com'
+
+# optional
+GMAIL_USER=you@gmail.com
+GMAIL_PASS=yourAPP password
 ```
 
 **Run the application:**
