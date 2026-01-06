@@ -19,6 +19,7 @@
             <a href="#features">Features</a>
             <a href="#quick-start">Quick Start</a>
             <a href="configuration.html">Configuration</a>
+            <a href="howto.html">How-To Guide</a>
             <a href="#documentation">Documentation</a>
             <a href="https://github.com/nfons/PowerSwitch" class="external_link">GitHub</a>
         </div>
@@ -97,22 +98,14 @@ npm run start:dev</code></pre>
                 <p>Edit the <code>.env</code> file to customize your setup with your own `[values]` <span class="subtext">(or rename sample.env to .env) </span> </p>
                 <pre><code>DB_TABLE=[DB TABLE NAME]
 CRON_TIME=[any valid cron, i.e * * * * *]
-API_TYPE=[either 'web' or 'csv' defaults to csv if left empty]
+API_TYPE=[either 'web' or 'csv' defaults to web if left empty]
 GAS_URL=[either csv url or web url. see Config option section for more info]
 ELECTRIC_URL=[either csv url or web url. see Config option section for more info]</code></pre>
             </div>
 
             <div class="doc-section">
                 <h3>Configuration Options</h3>
-                <p>Visit <a class="external_link" href="https://www.pagasswitch.com/">pagasswitch.com</a> and <a class="external_link" href="https://www.papowerswitch.com/">papowerswitch.com</a> to get your available providers </p>
-                <ul>
-                    <li><strong>If you default to CSV, you will need to get the CSV link for each utility type (gas, electric) <span class="subtext"> right click > copy link</span></strong> <img src="images/csv.png" /></li>
-                    <li><strong>If using WEB, make sure to sort by price and set the below filters  <span class="subtext">then copy url from url bar</span></strong></li>
-                        <ul>
-                            <li><img src="images/WEB.png"></li>
-                            <li><img src="images/web2.png"></li>
-                        </ul>
-                </ul>
+                <p>Visit <a class="external_link" href="/configuration.html">Configuration Options</a> for detailed information on setting up your system.</p>
             </div>
 
             <div class="doc-section">

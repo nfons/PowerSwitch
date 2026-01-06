@@ -58,6 +58,36 @@
                 <div class="note">
                     <strong>Note:</strong> If using "web" as API_TYPE, make sure to filter <code>rate options</code> and <code>Terms and Conditions</code> to filter out bad providers.
                 </div>
+
+                <h3>API Configuration</h3>
+                <ul>
+                    <li>
+                        <strong>API_TYPE:</strong> The type of API to use for fetching power usage data.
+                        <ul>
+                            <li>Default: <code>web</code></li>
+                            <li>Options: <code>csv</code> or <code>web</code></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>CSV API Type:</h4>
+                <p>You will need to get the CSV link for each utility type:</p>
+                <ul>
+                    <li>Right click on the CSV download link</li>
+                    <li>Select "Copy link"</li>
+                </ul>
+                <div style="text-align: center; margin: 20px 0;">
+                    <img src="images/csv.png" alt="CSV link example" style="max-width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);">
+                </div>
+                *Note: It is not recommended to use CSV for PECO due to their csv structure.. They do not provide their own rate in the CSV. sometimes PECO has the lowest rate, and it wont be captured properly
+                Use the WEB API type instead.*
+                <p/>
+                <h4>Web API Type:</h4>
+                <p>Make sure to sort by price and set the below filters, then copy the URL from the address bar. if you do not do this, you will not get the lowest rate for your area</p>
+                <div style="text-align: center; margin: 20px 0;">
+                    <img src="images/WEB.png" alt="Web filter example 1" style="max-width: 100%; border-radius: 12px; box-shadow: var(--shadow-md); margin-bottom: 20px;">
+                    <img src="images/web2.png" alt="Web filter example 2" style="max-width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);">
+                </div>
             </div>
         </section>
 
@@ -90,41 +120,9 @@
             </div>
 
             <div class="doc-section">
-                <h3>API Configuration</h3>
-                <ul>
-                    <li>
-                        <strong>API_TYPE:</strong> The type of API to use for fetching power usage data.
-                        <ul>
-                            <li>Default: <code>web</code></li>
-                            <li>Options: <code>csv</code> or <code>web</code></li>
-                        </ul>
-                    </li>
-                </ul>
-
-                <h4>CSV API Type:</h4>
-                <p>You will need to get the CSV link for each utility type:</p>
-                <ul>
-                    <li>Right click on the CSV download link</li>
-                    <li>Select "Copy link"</li>
-                </ul>
-                <div style="text-align: center; margin: 20px 0;">
-                    <img src="images/csv.png" alt="CSV link example" style="max-width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);">
-                </div>
-                *Note: It is not recommended to use CSV for PECO due to their csv structure.. They do not provide their own rate in the CSV. sometimes PECO has the lowest rate, and it wont be captured properly
-                Use the WEB API type instead.*
-                <p/>
-                <h4>Web API Type:</h4>
-                <p>Make sure to sort by price and set the below filters, then copy the URL from the address bar. if you do not do this, you will not get the lowest rate for your rate</p>
-                <div style="text-align: center; margin: 20px 0;">
-                    <img src="images/WEB.png" alt="Web filter example 1" style="max-width: 100%; border-radius: 12px; box-shadow: var(--shadow-md); margin-bottom: 20px;">
-                    <img src="images/web2.png" alt="Web filter example 2" style="max-width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);">
-                </div>
-            </div>
-
-            <div class="doc-section">
                 <h3>Email Alerting Configuration</h3>
                 <p>Currently only gmail is supported as an email provider. PowerSwitch uses nodemailer to handle email sending. You will need to set up an email app password to use this correctly</p>
-                take a look at nodemailer <a href="https://nodemailer.com/usage/using-gmail">documentation to see exact mechanism</a>
+                take a look at nodemailer <a href="https://nodemailer.com/usage/using-gmail" class="external_link">documentation</a>
 
                 <ul>
                     <li>Create an app password by visiting here: <a href="https://myaccount.google.com/apppasswords">https://myaccount.google.com/apppasswords</a> Note: you will need to have 2fa set up</li>
