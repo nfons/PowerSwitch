@@ -4,6 +4,8 @@ import { SchedulerRegistry, CronExpression } from '@nestjs/schedule';
 import { TasksService } from '../src/task.service';
 import { CronJob } from 'cron';
 import { PutlityService } from '../src/entities/putility/putlity.service';
+import { CurrentUtilityService } from '../src/entities/current_utility/current-utility.service';
+import { EmailService } from '../src/email/email.service';
 
 // Mock CronJob
 jest.mock('cron', () => {
@@ -86,6 +88,14 @@ describe('TasksService', () => {
     add: jest.fn().mockResolvedValue({}),
   };
 
+  const mockCurrentUtilityService = {
+    findCurrent: jest.fn().mockResolvedValue({}),
+  };
+
+  const mockEmailService = {
+    sendMail: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
     jest
@@ -106,6 +116,14 @@ describe('TasksService', () => {
         {
           provide: PutlityService,
           useValue: mockPutlityService,
+        },
+        {
+          provide: CurrentUtilityService,
+          useValue: mockCurrentUtilityService,
+        },
+        {
+          provide: EmailService,
+          useValue: mockEmailService,
         },
       ],
     }).compile();
@@ -128,9 +146,9 @@ describe('TasksService', () => {
       expect(service).toBeDefined();
     });
 
-    it('should have default schedule set to 0 0 10 * *', () => {
+    it('should have default schedule set to 0 0 15 * *', () => {
       expect(service.schedule).toBe(
-        '0 0 10 * *',
+        '0 0 15 * *',
       );
     });
 
@@ -151,6 +169,14 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -175,6 +201,14 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -202,6 +236,14 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -236,6 +278,14 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
@@ -260,12 +310,20 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
       const service = module.get<TasksService>(TasksService);
       expect(service.schedule).toBe(
-        '0 0 10 * *'
+        '0 0 15 * *'
       );
     });
 
@@ -287,12 +345,20 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
       const service = module.get<TasksService>(TasksService);
       expect(service.schedule).toBe(
-        '0 0 10 * *',
+        '0 0 15 * *',
       );
     });
   });
@@ -317,6 +383,14 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
@@ -339,6 +413,14 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -369,6 +451,14 @@ describe('TasksService', () => {
             {
               provide: PutlityService,
               useValue: mockPutlityService,
+            },
+            {
+              provide: CurrentUtilityService,
+              useValue: mockCurrentUtilityService,
+            },
+            {
+              provide: EmailService,
+              useValue: mockEmailService,
             },
           ],
         }).compile();
@@ -528,8 +618,8 @@ describe('TasksService', () => {
 
   describe('getUtilityRates', () => {
     beforeEach(() => {
-      jest.spyOn(service as any, 'fetchCSV').mockResolvedValue(undefined);
-      jest.spyOn(service as any, 'fetchWeb').mockResolvedValue(undefined);
+      jest.spyOn(service as any, 'fetchCSV').mockResolvedValue([]);
+      jest.spyOn(service as any, 'fetchWeb').mockResolvedValue([]);
     });
 
     it('should use web approach when API_TYPE is web', async () => {
@@ -611,7 +701,7 @@ describe('TasksService', () => {
       expect(service['fetchCSV']).not.toHaveBeenCalled();
     });
 
-    it('should default to CSV approach when API_TYPE is not set', async () => {
+    it('should default to WEB approach when API_TYPE is not set', async () => {
       mockConfigService.get.mockImplementation((key: string) => {
         if (key === 'GAS_URL') return 'https://example.com/gas.csv';
         return undefined;
@@ -619,7 +709,7 @@ describe('TasksService', () => {
 
       await service['getUtilityRates']();
 
-      expect(service['fetchCSV']).toHaveBeenCalledWith('gas');
+      expect(service['fetchWeb']).toHaveBeenCalledWith('gas');
     });
   });
   describe('getGoogleUrl', () => {
