@@ -1,14 +1,6 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { utilityType } from '../entities/utlityType.enum';
-import {
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  IsUrl,
-  Min,
-} from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUrl, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreatePUtilityDto {
@@ -21,8 +13,7 @@ export class CreatePUtilityDto {
   name: string;
 
   @ApiProperty({
-    description:
-      'Rate offered by the provider. Electric is per kWh; Gas is per ccf',
+    description: 'Rate offered by the provider. Electric is per kWh; Gas is per ccf',
     example: 0.12345,
     type: Number,
   })

@@ -63,9 +63,7 @@ describe('EmailService', () => {
     // transporter should not be created
     expect((nodemailer as any).createTransport).not.toHaveBeenCalled();
 
-    await expect(
-      service.sendMail({ to: 'user@example.com', subject: 'Test' }),
-    ).resolves.toBeUndefined();
+    await expect(service.sendMail({ to: 'user@example.com', subject: 'Test' })).resolves.toBeUndefined();
   });
 
   it('should initialize transporter when credentials are provided', async () => {
@@ -84,8 +82,7 @@ describe('EmailService', () => {
   it('should send email using transporter when configured', async () => {
     await createModule({ GMAIL_USER: 'test@gmail.com', GMAIL_PASS: 'secret' });
 
-    const transporter = (nodemailer as any).createTransport.mock.results[0]
-      .value;
+    const transporter = (nodemailer as any).createTransport.mock.results[0].value;
 
     await service.sendMail({
       to: 'user@example.com',
@@ -104,8 +101,7 @@ describe('EmailService', () => {
 
   it('should respect custom from address if provided', async () => {
     await createModule({ GMAIL_USER: 'test@gmail.com', GMAIL_PASS: 'secret' });
-    const transporter = (nodemailer as any).createTransport.mock.results[0]
-      .value;
+    const transporter = (nodemailer as any).createTransport.mock.results[0].value;
 
     await service.sendMail({
       to: 'user@example.com',
@@ -114,9 +110,7 @@ describe('EmailService', () => {
       from: 'Custom <custom@example.com>',
     });
 
-    expect(transporter.sendMail).toHaveBeenCalledWith(
-      expect.objectContaining({ from: 'Custom <custom@example.com>' }),
-    );
+    expect(transporter.sendMail).toHaveBeenCalledWith(expect.objectContaining({ from: 'Custom <custom@example.com>' }));
   });
 
   it('should initialize Ethereal SMTP transporter when EMAIL_TEST is set', async () => {

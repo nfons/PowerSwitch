@@ -98,9 +98,7 @@ describe('TasksService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    jest
-      .spyOn(TasksService.prototype, 'onModuleInit')
-      .mockImplementation(() => undefined);
+    jest.spyOn(TasksService.prototype, 'onModuleInit').mockImplementation(() => undefined);
 
     testingModule = await Test.createTestingModule({
       providers: [
@@ -211,10 +209,7 @@ describe('TasksService', () => {
         ],
       }).compile();
 
-      expect(mockSchedulerRegistry.addCronJob).toHaveBeenCalledWith(
-        'TasksService',
-        expect.any(CronJob),
-      );
+      expect(mockSchedulerRegistry.addCronJob).toHaveBeenCalledWith('TasksService', expect.any(CronJob));
     });
 
     it('should add cron job to scheduler registry and start it', async () => {
@@ -716,9 +711,7 @@ describe('TasksService', () => {
     it('should properly encode special characters', () => {
       const term = 'Energy & Power Inc.';
       const result = service['getGoogleUrl'](term);
-      expect(result).toBe(
-        'https://www.google.com/search?q=Energy%20%26%20Power%20Inc.',
-      );
+      expect(result).toBe('https://www.google.com/search?q=Energy%20%26%20Power%20Inc.');
     });
 
     it('should handle phone numbers', () => {
@@ -730,9 +723,7 @@ describe('TasksService', () => {
     it('should encode URLs in search terms', () => {
       const term = 'https://example.com/supplier';
       const result = service['getGoogleUrl'](term);
-      expect(result).toBe(
-        'https://www.google.com/search?q=https%3A%2F%2Fexample.com%2Fsupplier',
-      );
+      expect(result).toBe('https://www.google.com/search?q=https%3A%2F%2Fexample.com%2Fsupplier');
     });
 
     it('should handle empty string', () => {
@@ -744,17 +735,13 @@ describe('TasksService', () => {
     it('should encode terms with multiple spaces', () => {
       const term = 'Power  Company  Name';
       const result = service['getGoogleUrl'](term);
-      expect(result).toBe(
-        'https://www.google.com/search?q=Power%20%20Company%20%20Name',
-      );
+      expect(result).toBe('https://www.google.com/search?q=Power%20%20Company%20%20Name');
     });
 
     it('should encode special characters like quotes', () => {
       const term = 'Company "Best Rate"';
       const result = service['getGoogleUrl'](term);
-      expect(result).toBe(
-        'https://www.google.com/search?q=Company%20%22Best%20Rate%22',
-      );
+      expect(result).toBe('https://www.google.com/search?q=Company%20%22Best%20Rate%22');
     });
 
     it('should encode plus signs', () => {
@@ -956,8 +943,7 @@ describe('TasksService', () => {
     });
 
     it('should fetch and parse HTML content', async () => {
-      const htmlContent =
-        '<html><body><div class="supplier-card">Test</div></body></html>';
+      const htmlContent = '<html><body><div class="supplier-card">Test</div></body></html>';
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
@@ -1198,8 +1184,7 @@ describe('TasksService', () => {
     });
 
     it('should extract price from dollar amount regex', async () => {
-      const htmlContent =
-        '<html><body><div class="supplier-card">Rate: $0.15390 per kwh</div></body></html>';
+      const htmlContent = '<html><body><div class="supplier-card">Rate: $0.15390 per kwh</div></body></html>';
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
@@ -1218,8 +1203,7 @@ describe('TasksService', () => {
     });
 
     it('should extract term length from months pattern', async () => {
-      const htmlContent =
-        '<html><body><div class="supplier-card">24 Months contract</div></body></html>';
+      const htmlContent = '<html><body><div class="supplier-card">24 Months contract</div></body></html>';
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
@@ -1238,8 +1222,7 @@ describe('TasksService', () => {
     });
 
     it('should handle Month to Month term pattern', async () => {
-      const htmlContent =
-        '<html><body><div class="supplier-card">Month to Month plan</div></body></html>';
+      const htmlContent = '<html><body><div class="supplier-card">Month to Month plan</div></body></html>';
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
@@ -1284,8 +1267,7 @@ describe('TasksService', () => {
     });
 
     it('should skip suppliers with Unknown provider name', async () => {
-      const htmlContent =
-        '<html><body><div class="supplier-card">$0.12 per kwh</div></body></html>';
+      const htmlContent = '<html><body><div class="supplier-card">$0.12 per kwh</div></body></html>';
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
