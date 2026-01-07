@@ -64,7 +64,9 @@ describe('CurrentUtilityService', () => {
 
   describe('findOne', () => {
     it('should return a single current utility', async () => {
-      (mockRepository.findOneBy as jest.Mock).mockResolvedValue(mockCurrentUtility);
+      (mockRepository.findOneBy as jest.Mock).mockResolvedValue(
+        mockCurrentUtility,
+      );
 
       const result = await service.findOne(1);
 
@@ -84,7 +86,9 @@ describe('CurrentUtilityService', () => {
 
   describe('findCurrent', () => {
     it('should return the latest current utility by type', async () => {
-      (mockRepository.findOne as jest.Mock).mockResolvedValue(mockCurrentUtility);
+      (mockRepository.findOne as jest.Mock).mockResolvedValue(
+        mockCurrentUtility,
+      );
 
       const result = await service.findCurrent('electricity');
 

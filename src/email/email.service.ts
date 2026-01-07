@@ -12,7 +12,9 @@ export class EmailService {
     const pass = this.configService.get<string>('GMAIL_PASS');
 
     if (!user || !pass) {
-      this.logger.error('GMAIL_USER or GMAIL_PASS not set; EmailService will be disabled.');
+      this.logger.error(
+        'GMAIL_USER or GMAIL_PASS not set; EmailService will be disabled.',
+      );
       return;
     }
 
@@ -39,7 +41,9 @@ export class EmailService {
     from?: string;
   }): Promise<void> {
     if (!this.transporter) {
-      this.logger.warn('Email transporter is not configured. Skipping sendMail.');
+      this.logger.warn(
+        'Email transporter is not configured. Skipping sendMail.',
+      );
       return;
     }
 
@@ -52,9 +56,14 @@ export class EmailService {
         text: options.text,
         html: options.html,
       });
-      this.logger.log(`Email sent to: ${Array.isArray(options.to) ? options.to.join(', ') : options.to}`);
+      this.logger.log(
+        `Email sent to: ${Array.isArray(options.to) ? options.to.join(', ') : options.to}`,
+      );
     } catch (error) {
-      this.logger.error('Failed to send email', error instanceof Error ? error.message : String(error));
+      this.logger.error(
+        'Failed to send email',
+        error instanceof Error ? error.message : String(error),
+      );
       throw error;
     }
   }

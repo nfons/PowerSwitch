@@ -147,9 +147,7 @@ describe('TasksService', () => {
     });
 
     it('should have default schedule set to 0 0 15 * *', () => {
-      expect(service.schedule).toBe(
-        '0 0 15 * *',
-      );
+      expect(service.schedule).toBe('0 0 15 * *');
     });
 
     it('should use default schedule when CRON_TIME is not configured', () => {
@@ -322,9 +320,7 @@ describe('TasksService', () => {
       }).compile();
 
       const service = module.get<TasksService>(TasksService);
-      expect(service.schedule).toBe(
-        '0 0 15 * *'
-      );
+      expect(service.schedule).toBe('0 0 15 * *');
     });
 
     it('should handle null CRON_TIME by using default', async () => {
@@ -357,9 +353,7 @@ describe('TasksService', () => {
       }).compile();
 
       const service = module.get<TasksService>(TasksService);
-      expect(service.schedule).toBe(
-        '0 0 15 * *',
-      );
+      expect(service.schedule).toBe('0 0 15 * *');
     });
   });
 

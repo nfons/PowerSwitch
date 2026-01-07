@@ -10,8 +10,6 @@ import { PutlityService } from '../src/entities/putility/putlity.service';
 import { CurrentUtilityService } from '../src/entities/current_utility/current-utility.service';
 import { TasksService } from '../src/task.service';
 
-
-
 jest.setTimeout(15000);
 
 describe('AppController (e2e)', () => {
@@ -150,7 +148,10 @@ describe('AppController (e2e)', () => {
         .get('/config/current/electricity')
         .expect(200);
       // Expect the most recently inserted seeded config for type 'electricity' which has region 'south'
-      expect(res.body).toMatchObject({ fields: { region: 'south' }, type: 'electricity' });
+      expect(res.body).toMatchObject({
+        fields: { region: 'south' },
+        type: 'electricity',
+      });
     });
 
     it('/config/current/:type (GET) should return 404 when type not found', async () => {
