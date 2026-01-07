@@ -2,9 +2,21 @@
 
 A NestJS-based application for managing and automating Utility Provider switching with a built-in web interface.
 
+### Why?
+In Pennsylvania, consumers have the power to choose their electricity and natural gas suppliers. By switching to a different provider, you can often find better rates and save 💰 💰 💰 .
+Unfortunately, managing this system is cumbersome and time-consuming. Providers often have term limits on their rates and will often increase the rate for existing customers. PowerSwitch helps with this process, helping you save money by always being on the best available rate. and alerting you if a rate is found.
+
+#### Aren't there other alternatives?
+
+Yes, there are other alternatives like Arbor but they are a for-profit enterprise that gets money for referrals. This requires 2 things:
+
+They require you to provide your personal information, which can be a privacy concern.
+They have providers they partner with...which might not be the best rate for you
+With Power Switch, The data is yours to control. And you can be sure you are getting the best possible rate.
+
 ## Features
 
-- This will automtically parse (either via web or the CSV download option) current utility rates for PApower and PAgas.
+- This will automatically parse (either via web or the CSV download option) current utility rates for PApower and PAgas.
 - It will select the cheapest provider and compare your current rate with that of the cheapest provider. and alert you if there is a cheaper option via an email drop
 
 
@@ -70,12 +82,14 @@ npm run build && npm run start:prod
 ```
 
 ## Development
+Refer to the [Development Guide](DEVELOPMENT.md) for more information.
 ### API docs (Swagger)
 
 The API is documented using Swagger (OpenAPI).
 
 - Swagger UI: http://localhost:8080/docs
 - All API routes are prefixed with `/api` (for example: `GET /api/putlity`, `GET /api/putility/best/:type`).
+
 
 ### Project Structure
 
