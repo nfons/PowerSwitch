@@ -3,12 +3,7 @@
  *  This is stored from the API/Web call we make
  *  it is a record of the current "best" rate utility. to show to user in the FE at a later time
  */
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 @Entity()
 export class PUtility {

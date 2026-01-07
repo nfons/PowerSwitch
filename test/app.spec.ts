@@ -77,35 +77,25 @@ describe('AppController (e2e)', () => {
   });
 
   it('should return 200 Healthy when hitting /health', () => {
-    return request(app.getHttpServer())
-      .get('/health')
-      .expect(200)
-      .expect('200 Healthy');
+    return request(app.getHttpServer()).get('/health').expect(200).expect('200 Healthy');
   });
 
   describe('putility tests', () => {
     it('/putlity (GET) should return all records', async () => {
-      const res = await request(app.getHttpServer())
-        .get('/putlity')
-        .expect(200);
+      const res = await request(app.getHttpServer()).get('/putlity').expect(200);
       const names = res.body.map((item: any) => item.name).sort();
       expect(names).toEqual(['alpha', 'beta', 'omega']);
     });
 
     it('/putlity/:id (GET) should return the requested record', async () => {
       const target = seededUtilities[0];
-      const res = await request(app.getHttpServer())
-        .get(`/putlity/${target.id}`)
-        .expect(200);
+      const res = await request(app.getHttpServer()).get(`/putlity/${target.id}`).expect(200);
       expect(res.body).toMatchObject({ id: target.id, name: target.name });
     });
 
     it('/putility (PUT) should create a new record', async () => {
       const putlity = { name: 'gamma', rate: 0.1, type: 'gas' };
-      const res = await request(app.getHttpServer())
-        .put('/putlity')
-        .send(putlity)
-        .expect(200);
+      const res = await request(app.getHttpServer()).put('/putlity').send(putlity).expect(200);
       expect(res.text).toBe('Utility Record Created');
     });
   });
@@ -119,9 +109,7 @@ describe('AppController (e2e)', () => {
 
     it('/config/:id (GET) should return the requested config', async () => {
       const target = seededConfigs[0];
-      const res = await request(app.getHttpServer())
-        .get(`/config/${target.id}`)
-        .expect(200);
+      const res = await request(app.getHttpServer()).get(`/config/${target.id}`).expect(200);
       expect(res.body).toMatchObject({ id: target.id, fields: target.fields });
     });
 
@@ -133,10 +121,7 @@ describe('AppController (e2e)', () => {
         rate: 0.12,
         type: 'electricity',
       };
-      const res = await request(app.getHttpServer())
-        .put('/config')
-        .send(dto)
-        .expect(200);
+      const res = await request(app.getHttpServer()).put('/config').send(dto).expect(200);
       expect(res.body.id).toBeDefined();
       expect(res.body.fields.region).toBe('east');
       const persisted = await utilityConfigService.findOne(res.body.id);
@@ -144,9 +129,7 @@ describe('AppController (e2e)', () => {
     });
 
     it('/config/current/:type (GET) should return the latest config for given type', async () => {
-      const res = await request(app.getHttpServer())
-        .get('/config/current/electricity')
-        .expect(200);
+      const res = await request(app.getHttpServer()).get('/config/current/electricity').expect(200);
       // Expect the most recently inserted seeded config for type 'electricity' which has region 'south'
       expect(res.body).toMatchObject({
         fields: { region: 'south' },
@@ -155,9 +138,7 @@ describe('AppController (e2e)', () => {
     });
 
     it('/config/current/:type (GET) should return 404 when type not found', async () => {
-      const res = await request(app.getHttpServer())
-        .get('/config/current/gas')
-        .expect(404);
+      const res = await request(app.getHttpServer()).get('/config/current/gas').expect(404);
       expect(res.body).toMatchObject({ statusCode: 404, error: 'Not Found' });
     });
   });

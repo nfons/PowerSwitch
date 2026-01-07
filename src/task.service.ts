@@ -32,8 +32,7 @@ export class TasksService {
     private emailService: EmailService,
   ) {
     this.logger = new Logger(TasksService.name);
-    const schedule =
-      this.configService.get<string>('CRON_TIME') || this.schedule;
+    const schedule = this.configService.get<string>('CRON_TIME') || this.schedule;
     const job = new CronJob(schedule, async () => {
       this.getUtilityRates();
     });
@@ -99,9 +98,8 @@ export class TasksService {
       if (termMatch) {
         term = termMatch[1];
         // We want integer values here to do compare at a later time
-        if (term.includes('Months'))
-          term = term.replace('Months', '').replace(' ', '');
-        else if (term.includes('Month to Month')) term = '1';
+        if (term.includes('Months')) term = term.replace('Months', '').replace(' ', '');
+        else if (term.toLowerCase().includes('month to month') || isNaN(parseInt(term))) term = '1';
       }
 
       // URL
@@ -119,9 +117,7 @@ export class TasksService {
       }
 
       // Prevent duplicates This was happening couple of times for some reason
-      const isDuplicate = results.some(
-        (r) => r.provider === provider && r.price === price,
-      );
+      const isDuplicate = results.some((r) => r.provider === provider && r.price === price);
 
       if (!isDuplicate && provider !== 'Unknown') {
         let putilityEntity: PUtility = new PUtility();
@@ -143,10 +139,7 @@ export class TasksService {
    * @private
    */
   private async fetchCSV(type: string) {
-    const URL =
-      type === 'gas'
-        ? this.configService.get('GAS_URL')
-        : this.configService.get('ELECTRIC_URL');
+    const URL = type === 'gas' ? this.configService.get('GAS_URL') : this.configService.get('ELECTRIC_URL');
     let results: any = [];
 
     try {
@@ -164,14 +157,10 @@ export class TasksService {
           .pipe(csv())
           .on('data', (data: any) => {
             // Find column keys containing "price" or "rate" case-insensitive
-            let priceKey = Object.keys(data).find((k) =>
-              k.toLowerCase().includes('price'),
-            );
+            let priceKey = Object.keys(data).find((k) => k.toLowerCase().includes('price'));
 
             if (!priceKey) {
-              priceKey = Object.keys(data).find((k) =>
-                k.toLowerCase().includes('rate'),
-              );
+              priceKey = Object.keys(data).find((k) => k.toLowerCase().includes('rate'));
             }
 
             // If found, parse and store
@@ -197,21 +186,13 @@ export class TasksService {
                 for (let key in filter) {
                   switch (key) {
                     case 'Monthly Fee':
-                      if (
-                        item[key] === 'Yes' ||
-                        (!isNaN(item[key]) && parseFloat(item[key]) > 0)
-                      ) {
+                      if (item[key] === 'Yes' || (!isNaN(item[key]) && parseFloat(item[key]) > 0)) {
                         return false;
                       }
                       break;
                     case 'Cancellation Fee':
                     case 'Monthly service fee amount':
-                      if (
-                        item[key] !== '0' &&
-                        item[key] !== '' &&
-                        item[key] !== undefined &&
-                        item[key] !== 'No'
-                      ) {
+                      if (item[key] !== '0' && item[key] !== '' && item[key] !== undefined && item[key] !== 'No') {
                         return false;
                       }
                       break;
@@ -234,15 +215,10 @@ export class TasksService {
               putilityEntity.rate = item.Price;
               putilityEntity.type = type;
               putilityEntity.rateLength = rateLength;
-              putilityEntity.url = this.getGoogleUrl(
-                item['Contact Phone Number'] || item['Supplier'],
-              );
+              putilityEntity.url = this.getGoogleUrl(item['Contact Phone Number'] || item['Supplier']);
               this.putilityService.add(putilityEntity); // add entry to db
               // add entry to currentRate
-              this.logger.debug(
-                'Added Putility entry to DB:',
-                putilityEntity.name,
-              );
+              this.logger.debug('Added Putility entry to DB:', putilityEntity.name);
             });
             return results;
           })
@@ -267,10 +243,7 @@ export class TasksService {
     const page = await browser.newPage();
 
     // 2 Navigate to URL
-    let url =
-      type === 'gas'
-        ? this.configService.get('GAS_URL')
-        : this.configService.get('ELECTRIC_URL');
+    let url = type === 'gas' ? this.configService.get('GAS_URL') : this.configService.get('ELECTRIC_URL');
     await page.goto(url, { waitUntil: 'networkidle2' });
 
     // 3 Fetch the raw HTML string (Requested Method)
@@ -306,14 +279,7 @@ export class TasksService {
     const rateprefix = type === 'gas' ? 'ccf' : 'kwh';
     const emailbody = `<h1>New best ${type} rate found</h1><h3>Supplier:</h3><strong>${utility.name}</strong> at ${utility.rate} ${rateprefix}, check out details <a href="${utility.url}">@ ${utility.url}</a>`;
     const emailTitle = `New Best ${type.toUpperCase()} Rate Alert from your PowerSwitch Instance`;
-    this.logger.debug(
-      'Sending email alert for new best ' +
-        type +
-        ' rate: ' +
-        utility.name +
-        ' at rate ' +
-        utility.rate,
-    );
+    this.logger.debug('Sending email alert for new best ' + type + ' rate: ' + utility.name + ' at rate ' + utility.rate);
     this.emailService.sendMail({
       to: this.configService.get<string>('GMAIL_USER') || '',
       subject: emailTitle,
@@ -334,9 +300,7 @@ export class TasksService {
     this.currentElectricRates = [];
     // check config to see if rates should use web or csv approach
     try {
-      const apiType = (
-        this.configService.get<string>('API_TYPE') || ''
-      ).toLowerCase();
+      const apiType = (this.configService.get<string>('API_TYPE') || '').toLowerCase();
       if (apiType === 'csv') {
         this.logger.debug('Using CSV file to get utility rates');
         if (this.configService.get('GAS_URL')) {
@@ -374,26 +338,23 @@ export class TasksService {
     const bestGasRate = this.currentGasRates[0];
     const bestElectricRate = this.currentElectricRates[0];
 
-    const currentElectric: any =
-      await this.cutilityService.findCurrent('electric');
+    const currentElectric: any = await this.cutilityService.findCurrent('electric');
     const currentGas: any = await this.cutilityService.findCurrent('gas');
 
-    if (currentGas === null || currentGas?.rate > bestGasRate?.rate) {
-      this.logger.debug(
-        `New best gas rate found: ${bestGasRate.name} at rate ${bestGasRate.rate}`,
-      );
-      // send email alert
-      this.sendEmail('gas', bestGasRate);
+    if (bestGasRate !== undefined) {
+      if (currentGas === null || currentGas?.rate > bestGasRate?.rate) {
+        this.logger.debug(`New best gas rate found: ${bestGasRate.name} at rate ${bestGasRate.rate}`);
+        // send email alert
+        this.sendEmail('gas', bestGasRate);
+      }
     }
-    if (
-      currentElectric === null ||
-      currentElectric?.rate > bestElectricRate?.rate
-    ) {
-      this.logger.debug(
-        `New best electric rate found: ${bestElectricRate.name} at rate ${bestElectricRate.rate}`,
-      );
-      // send email alert
-      this.sendEmail('electric', bestElectricRate);
+
+    if (bestElectricRate !== undefined) {
+      if (currentElectric === null || currentElectric?.rate > bestElectricRate?.rate) {
+        this.logger.debug(`New best electric rate found: ${bestElectricRate.name} at rate ${bestElectricRate.rate}`);
+        // send email alert
+        this.sendEmail('electric', bestElectricRate);
+      }
     }
   }
 }

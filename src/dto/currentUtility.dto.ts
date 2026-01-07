@@ -1,12 +1,4 @@
-import {
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  IsDate,
-  Min,
-} from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsDate, Min } from 'class-validator';
 import { utilityType } from '../entities/utlityType.enum';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -30,8 +22,7 @@ export class CreateCurrentUtilityDto {
   type: string;
 
   @ApiProperty({
-    description:
-      'Rate charged by the provider. For Gas this is per ccf, for Electric per kWh',
+    description: 'Rate charged by the provider. For Gas this is per ccf, for Electric per kWh',
     example: 0.12345,
     type: Number,
   })
@@ -64,6 +55,4 @@ export class CreateCurrentUtilityDto {
   fields?: any;
 }
 
-export class UpdateCurrentUtilityDto extends PartialType(
-  CreateCurrentUtilityDto,
-) {}
+export class UpdateCurrentUtilityDto extends PartialType(CreateCurrentUtilityDto) {}

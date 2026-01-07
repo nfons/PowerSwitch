@@ -1,22 +1,5 @@
-import {
-  Controller,
-  Get,
-  Put,
-  Body,
-  Post,
-  Delete,
-  Param,
-  ParseIntPipe,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
-import {
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-  ApiBody,
-  ApiParam,
-} from '@nestjs/swagger';
+import { Controller, Get, Put, Body, Post, Delete, Param, ParseIntPipe, Logger, NotFoundException } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags, ApiBody, ApiParam } from '@nestjs/swagger';
 import { AppService } from './app.service';
 import { CreatePUtilityDto, UpdatePUtilityDto } from './dto/putility.dto';
 import { PutlityService } from './entities/putility/putlity.service';
@@ -104,9 +87,7 @@ export class AppController {
   })
   @ApiResponse({ status: 404, description: 'Utility record not found.' })
   @Get('/putlity/:id')
-  async getPutlityById(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<PUtility | null> {
+  async getPutlityById(@Param('id', ParseIntPipe) id: number): Promise<PUtility | null> {
     try {
       return await this.putlityService.findOne(id);
     } catch (e) {
@@ -176,9 +157,7 @@ export class AppController {
     status: 404,
     description: 'Current configuration record not found.',
   })
-  async getCurrentConfig(
-    @Param('type') type: string,
-  ): Promise<CurrentUtility | null> {
+  async getCurrentConfig(@Param('type') type: string): Promise<CurrentUtility | null> {
     try {
       const current = await this.utilityService.findCurrent(type);
       if (!current) {
@@ -204,9 +183,7 @@ export class AppController {
   })
   @ApiResponse({ status: 404, description: 'Configuration record not found.' })
   @Get('/config/:id')
-  async getConfigById(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<CurrentUtility | null> {
+  async getConfigById(@Param('id', ParseIntPipe) id: number): Promise<CurrentUtility | null> {
     try {
       return await this.utilityService.findOne(id);
     } catch (e) {
@@ -226,14 +203,9 @@ export class AppController {
     type: CurrentUtility,
   })
   @Put('/config')
-  async createConfig(
-    @Body() createCurrentUtilityDto: CreateCurrentUtilityDto,
-  ): Promise<CurrentUtility> {
+  async createConfig(@Body() createCurrentUtilityDto: CreateCurrentUtilityDto): Promise<CurrentUtility> {
     try {
-      const payload = Object.assign(
-        new CurrentUtility(),
-        createCurrentUtilityDto,
-      );
+      const payload = Object.assign(new CurrentUtility(), createCurrentUtilityDto);
       return await this.utilityService.add(payload);
     } catch (e) {
       this.logger.error(e);

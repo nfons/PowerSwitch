@@ -17,12 +17,7 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
-  const config = new DocumentBuilder()
-    .setTitle('Power Switch')
-    .setDescription('powerswitch api')
-    .setVersion('1.0')
-    .addTag('local')
-    .build();
+  const config = new DocumentBuilder().setTitle('Power Switch').setDescription('powerswitch api').setVersion('1.0').addTag('local').build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, documentFactory);
   await app.listen(port);
