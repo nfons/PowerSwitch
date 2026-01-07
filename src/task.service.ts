@@ -22,16 +22,15 @@ export class TasksService {
     0 12 1 * *
     Utility Rates do not change often, we can save API calls by running this task once a month
      */
-  public schedule: string =  '0 0 15 * *'; // Rates should be out by then. 15th day of mo at midnight
+  public schedule: string = '0 0 15 * *'; // Rates should be out by then. 15th day of mo at midnight
 
   constructor(
     private readonly configService: ConfigService,
     private schedulerRegistry: SchedulerRegistry,
     private putilityService: PutlityService,
     private cutilityService: CurrentUtilityService,
-    private emailService : EmailService
+    private emailService: EmailService,
   ) {
-
     this.logger = new Logger(TasksService.name);
     const schedule =
       this.configService.get<string>('CRON_TIME') || this.schedule;
@@ -44,7 +43,7 @@ export class TasksService {
     job.start();
   }
 
-  onModuleInit(){
+  onModuleInit() {
     this.getUtilityRates();
   }
 
@@ -262,7 +261,7 @@ export class TasksService {
    * @private
    */
   private async fetchWeb(type: string) {
-    this.logger.debug('Fetching utility rates from web API for type:'+ type);
+    this.logger.debug('Fetching utility rates from web API for type:' + type);
     // 1. Launch Browser
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
@@ -303,15 +302,22 @@ export class TasksService {
    Email alert for new best utility rate
    using nodemailer
    */
-  private async sendEmail(type, utility: PUtility){
+  private async sendEmail(type, utility: PUtility) {
     const rateprefix = type === 'gas' ? 'ccf' : 'kwh';
     const emailbody = `<h1>New best ${type} rate found</h1><h3>Supplier:</h3><strong>${utility.name}</strong> at ${utility.rate} ${rateprefix}, check out details <a href="${utility.url}">@ ${utility.url}</a>`;
     const emailTitle = `New Best ${type.toUpperCase()} Rate Alert from your PowerSwitch Instance`;
-    this.logger.debug('Sending email alert for new best '+ type + ' rate: ' + utility.name + ' at rate ' + utility.rate);
+    this.logger.debug(
+      'Sending email alert for new best ' +
+        type +
+        ' rate: ' +
+        utility.name +
+        ' at rate ' +
+        utility.rate,
+    );
     this.emailService.sendMail({
       to: this.configService.get<string>('GMAIL_USER') || '',
       subject: emailTitle,
-      html: emailbody
+      html: emailbody,
     });
   }
 
@@ -328,7 +334,9 @@ export class TasksService {
     this.currentElectricRates = [];
     // check config to see if rates should use web or csv approach
     try {
-      const apiType = (this.configService.get<string>('API_TYPE') || '').toLowerCase();
+      const apiType = (
+        this.configService.get<string>('API_TYPE') || ''
+      ).toLowerCase();
       if (apiType === 'csv') {
         this.logger.debug('Using CSV file to get utility rates');
         if (this.configService.get('GAS_URL')) {
@@ -366,19 +374,26 @@ export class TasksService {
     const bestGasRate = this.currentGasRates[0];
     const bestElectricRate = this.currentElectricRates[0];
 
-    const currentElectric: any = await this.cutilityService.findCurrent('electric');
+    const currentElectric: any =
+      await this.cutilityService.findCurrent('electric');
     const currentGas: any = await this.cutilityService.findCurrent('gas');
 
-    if(currentGas === null || currentGas?.rate > bestGasRate?.rate) {
-      this.logger.debug(`New best gas rate found: ${bestGasRate.name} at rate ${bestGasRate.rate}`);
+    if (currentGas === null || currentGas?.rate > bestGasRate?.rate) {
+      this.logger.debug(
+        `New best gas rate found: ${bestGasRate.name} at rate ${bestGasRate.rate}`,
+      );
       // send email alert
       this.sendEmail('gas', bestGasRate);
     }
-    if(currentElectric === null || currentElectric?.rate > bestElectricRate?.rate) {
-      this.logger.debug(`New best electric rate found: ${bestElectricRate.name} at rate ${bestElectricRate.rate}`);
+    if (
+      currentElectric === null ||
+      currentElectric?.rate > bestElectricRate?.rate
+    ) {
+      this.logger.debug(
+        `New best electric rate found: ${bestElectricRate.name} at rate ${bestElectricRate.rate}`,
+      );
       // send email alert
       this.sendEmail('electric', bestElectricRate);
     }
-
   }
 }

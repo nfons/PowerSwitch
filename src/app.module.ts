@@ -43,6 +43,5 @@ const dbConfig = TypeOrmModule.forRootAsync({
   providers: [AppService, TasksService],
 })
 export class AppModule {
-  constructor(private dataSource: DataSource) {
-  }
+  constructor(private dataSource: DataSource) {}
 }

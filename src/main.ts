@@ -9,12 +9,14 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   app.setGlobalPrefix('api');
-  app.useGlobalPipes(new ValidationPipe({
-    transform: true,
-    whitelist: true,
-    forbidNonWhitelisted: false,
-    transformOptions: { enableImplicitConversion: true },
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: false,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
   const config = new DocumentBuilder()
     .setTitle('Power Switch')
     .setDescription('powerswitch api')
@@ -22,7 +24,7 @@ async function bootstrap() {
     .addTag('local')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, documentFactory)
+  SwaggerModule.setup('docs', app, documentFactory);
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
 }
