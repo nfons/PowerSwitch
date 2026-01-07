@@ -16,7 +16,7 @@ The easiest way to get started is using Docker:
 
 ```bash
 docker pull ghcr.io/nfons/powerswitch/powerswitch:latest
-docker run -p 8080:8080 powerswitch
+docker run -p 8080:8080  --env-file ./.env powerswitch
 ```
 
 Access the application at `http://localhost:8080`
