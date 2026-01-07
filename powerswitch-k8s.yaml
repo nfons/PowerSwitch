@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: powertable-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: powerswitch-config
+
+data:
+  DB_TABLE: "powertable.db"
+  CRON_TIME: "0 0 10 * *"
+  ELECTRIC_URL: "https://www.papowerswitch.com/"
+  API_TYPE: "web"
+  GAS_URL: "someurl.com"
+  GMAIL_USER: "YOU@GMAIL.com"
+  GMAIL_PASS: "gmail app password"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: powerswitch-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: powerswitch
+  template:
+    metadata:
+      labels:
+        app: powerswitch
+    spec:
+      containers:
+        - name: powerswitch
+          image: ghcr.io/nfons/powerswitch/powerswitch:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: powerswitch-config
+          volumeMounts:
+            - name: powertable-storage
+              mountPath: /app/powertable.db
+              subPath: powertable.db
+      volumes:
+        - name: powertable-storage
+          persistentVolumeClaim:
+            claimName: powertable-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: powerswitch-service
+spec:
+  selector:
+    app: powerswitch
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+

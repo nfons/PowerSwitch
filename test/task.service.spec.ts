@@ -4,6 +4,8 @@ import { SchedulerRegistry, CronExpression } from '@nestjs/schedule';
 import { TasksService } from '../src/task.service';
 import { CronJob } from 'cron';
 import { PutlityService } from '../src/entities/putility/putlity.service';
+import { CurrentUtilityService } from '../src/entities/current_utility/current-utility.service';
+import { EmailService } from '../src/email/email.service';
 
 // Mock CronJob
 jest.mock('cron', () => {
@@ -86,8 +88,17 @@ describe('TasksService', () => {
     add: jest.fn().mockResolvedValue({}),
   };
 
+  const mockCurrentUtilityService = {
+    findCurrent: jest.fn().mockResolvedValue({}),
+  };
+
+  const mockEmailService = {
+    sendMail: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
+    jest.spyOn(TasksService.prototype, 'onModuleInit').mockImplementation(() => undefined);
 
     testingModule = await Test.createTestingModule({
       providers: [
@@ -103,6 +114,14 @@ describe('TasksService', () => {
         {
           provide: PutlityService,
           useValue: mockPutlityService,
+        },
+        {
+          provide: CurrentUtilityService,
+          useValue: mockCurrentUtilityService,
+        },
+        {
+          provide: EmailService,
+          useValue: mockEmailService,
         },
       ],
     }).compile();
@@ -125,10 +144,8 @@ describe('TasksService', () => {
       expect(service).toBeDefined();
     });
 
-    it('should have default schedule set to EVERY_1ST_DAY_OF_MONTH_AT_NOON', () => {
-      expect(service.schedule).toBe(
-        CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON,
-      );
+    it('should have default schedule set to 0 0 15 * *', () => {
+      expect(service.schedule).toBe('0 0 15 * *');
     });
 
     it('should use default schedule when CRON_TIME is not configured', () => {
@@ -148,6 +165,14 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -173,13 +198,18 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
-      expect(mockSchedulerRegistry.addCronJob).toHaveBeenCalledWith(
-        'TasksService',
-        expect.any(CronJob),
-      );
+      expect(mockSchedulerRegistry.addCronJob).toHaveBeenCalledWith('TasksService', expect.any(CronJob));
     });
 
     it('should add cron job to scheduler registry and start it', async () => {
@@ -199,6 +229,14 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -233,6 +271,14 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
@@ -257,13 +303,19 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
       const service = module.get<TasksService>(TasksService);
-      expect(service.schedule).toBe(
-        CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON,
-      );
+      expect(service.schedule).toBe('0 0 15 * *');
     });
 
     it('should handle null CRON_TIME by using default', async () => {
@@ -284,13 +336,19 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
       const service = module.get<TasksService>(TasksService);
-      expect(service.schedule).toBe(
-        CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON,
-      );
+      expect(service.schedule).toBe('0 0 15 * *');
     });
   });
 
@@ -314,6 +372,14 @@ describe('TasksService', () => {
             provide: PutlityService,
             useValue: mockPutlityService,
           },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
+          },
         ],
       }).compile();
 
@@ -336,6 +402,14 @@ describe('TasksService', () => {
           {
             provide: PutlityService,
             useValue: mockPutlityService,
+          },
+          {
+            provide: CurrentUtilityService,
+            useValue: mockCurrentUtilityService,
+          },
+          {
+            provide: EmailService,
+            useValue: mockEmailService,
           },
         ],
       }).compile();
@@ -366,6 +440,14 @@ describe('TasksService', () => {
             {
               provide: PutlityService,
               useValue: mockPutlityService,
+            },
+            {
+              provide: CurrentUtilityService,
+              useValue: mockCurrentUtilityService,
+            },
+            {
+              provide: EmailService,
+              useValue: mockEmailService,
             },
           ],
         }).compile();
@@ -525,8 +607,8 @@ describe('TasksService', () => {
 
   describe('getUtilityRates', () => {
     beforeEach(() => {
-      jest.spyOn(service as any, 'fetchCSV').mockResolvedValue(undefined);
-      jest.spyOn(service as any, 'fetchWeb').mockResolvedValue(undefined);
+      jest.spyOn(service as any, 'fetchCSV').mockResolvedValue([]);
+      jest.spyOn(service as any, 'fetchWeb').mockResolvedValue([]);
     });
 
     it('should use web approach when API_TYPE is web', async () => {
@@ -608,7 +690,7 @@ describe('TasksService', () => {
       expect(service['fetchCSV']).not.toHaveBeenCalled();
     });
 
-    it('should default to CSV approach when API_TYPE is not set', async () => {
+    it('should default to WEB approach when API_TYPE is not set', async () => {
       mockConfigService.get.mockImplementation((key: string) => {
         if (key === 'GAS_URL') return 'https://example.com/gas.csv';
         return undefined;
@@ -616,7 +698,7 @@ describe('TasksService', () => {
 
       await service['getUtilityRates']();
 
-      expect(service['fetchCSV']).toHaveBeenCalledWith('gas');
+      expect(service['fetchWeb']).toHaveBeenCalledWith('gas');
     });
   });
   describe('getGoogleUrl', () => {
@@ -629,9 +711,7 @@ describe('TasksService', () => {
     it('should properly encode special characters', () => {
       const term = 'Energy & Power Inc.';
       const result = service['getGoogleUrl'](term);
-      expect(result).toBe(
-        'https://www.google.com/search?q=Energy%20%26%20Power%20Inc.',
-      );
+      expect(result).toBe('https://www.google.com/search?q=Energy%20%26%20Power%20Inc.');
     });
 
     it('should handle phone numbers', () => {
@@ -643,9 +723,7 @@ describe('TasksService', () => {
     it('should encode URLs in search terms', () => {
       const term = 'https://example.com/supplier';
       const result = service['getGoogleUrl'](term);
-      expect(result).toBe(
-        'https://www.google.com/search?q=https%3A%2F%2Fexample.com%2Fsupplier',
-      );
+      expect(result).toBe('https://www.google.com/search?q=https%3A%2F%2Fexample.com%2Fsupplier');
     });
 
     it('should handle empty string', () => {
@@ -657,17 +735,13 @@ describe('TasksService', () => {
     it('should encode terms with multiple spaces', () => {
       const term = 'Power  Company  Name';
       const result = service['getGoogleUrl'](term);
-      expect(result).toBe(
-        'https://www.google.com/search?q=Power%20%20Company%20%20Name',
-      );
+      expect(result).toBe('https://www.google.com/search?q=Power%20%20Company%20%20Name');
     });
 
     it('should encode special characters like quotes', () => {
       const term = 'Company "Best Rate"';
       const result = service['getGoogleUrl'](term);
-      expect(result).toBe(
-        'https://www.google.com/search?q=Company%20%22Best%20Rate%22',
-      );
+      expect(result).toBe('https://www.google.com/search?q=Company%20%22Best%20Rate%22');
     });
 
     it('should encode plus signs', () => {
@@ -869,8 +943,7 @@ describe('TasksService', () => {
     });
 
     it('should fetch and parse HTML content', async () => {
-      const htmlContent =
-        '<html><body><div class="supplier-card">Test</div></body></html>';
+      const htmlContent = '<html><body><div class="supplier-card">Test</div></body></html>';
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
@@ -1054,9 +1127,64 @@ describe('TasksService', () => {
       expect(mockBrowser.close).toHaveBeenCalled();
     });
 
+    it('should use peco.com URL for PECO provider', () => {
+      const htmlContent = `
+        <html>
+          <body>
+            <div class="rate-card">
+              <div class="name">PECO</div>
+              <div>$0.10 per kwh</div>
+              <div>Term Length: 12 Months</div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      const cheerio = jest.requireActual('cheerio');
+      const $ = cheerio.load(htmlContent);
+      const element = $('.rate-card').get(0);
+      const results: any = [];
+
+      service['getDataFromNode'](element, $, 'electric', results);
+
+      expect(mockPutlityService.add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'PECO',
+          url: 'https://www.peco.com/',
+        }),
+      );
+    });
+
+    it('should use peco.com URL for provider with PECO in name', () => {
+      const htmlContent = `
+        <html>
+          <body>
+            <div class="rate-card">
+              <div class="name">PECO Energy Company</div>
+              <div>$0.09 per kwh</div>
+              <div>Term Length: 6 Months</div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      const cheerio = jest.requireActual('cheerio');
+      const $ = cheerio.load(htmlContent);
+      const element = $('.rate-card').get(0);
+      const results: any = [];
+
+      service['getDataFromNode'](element, $, 'electric', results);
+
+      expect(mockPutlityService.add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'PECO Energy Company',
+          url: 'https://www.peco.com/',
+        }),
+      );
+    });
+
     it('should extract price from dollar amount regex', async () => {
-      const htmlContent =
-        '<html><body><div class="supplier-card">Rate: $0.15390 per kwh</div></body></html>';
+      const htmlContent = '<html><body><div class="supplier-card">Rate: $0.15390 per kwh</div></body></html>';
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
@@ -1075,8 +1203,7 @@ describe('TasksService', () => {
     });
 
     it('should extract term length from months pattern', async () => {
-      const htmlContent =
-        '<html><body><div class="supplier-card">24 Months contract</div></body></html>';
+      const htmlContent = '<html><body><div class="supplier-card">24 Months contract</div></body></html>';
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
@@ -1095,8 +1222,7 @@ describe('TasksService', () => {
     });
 
     it('should handle Month to Month term pattern', async () => {
-      const htmlContent =
-        '<html><body><div class="supplier-card">Month to Month plan</div></body></html>';
+      const htmlContent = '<html><body><div class="supplier-card">Month to Month plan</div></body></html>';
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {
@@ -1141,8 +1267,7 @@ describe('TasksService', () => {
     });
 
     it('should skip suppliers with Unknown provider name', async () => {
-      const htmlContent =
-        '<html><body><div class="supplier-card">$0.12 per kwh</div></body></html>';
+      const htmlContent = '<html><body><div class="supplier-card">$0.12 per kwh</div></body></html>';
       mockPage.content.mockResolvedValue(htmlContent);
 
       mockConfigService.get.mockImplementation((key: string) => {

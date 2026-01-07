@@ -9,18 +9,21 @@ describe('CurrentUtilityService', () => {
   let repository: Repository<CurrentUtility>;
 
   const mockCurrentUtility: CurrentUtility = {
-    id: 1,
+    id: 2,
     nextrun: new Date('2025-12-20'),
     fields: { key: 'value' },
     rate: 0.12,
-  };
+    name: 'south',
+    type: 'electricity',
+  } as unknown as CurrentUtility;
 
   const mockRepository = {
     find: jest.fn(),
     findOneBy: jest.fn(),
+    findOne: jest.fn(),
     delete: jest.fn(),
     save: jest.fn(),
-  };
+  } as Partial<Repository<CurrentUtility>>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -34,9 +37,7 @@ describe('CurrentUtilityService', () => {
     }).compile();
 
     service = module.get<CurrentUtilityService>(CurrentUtilityService);
-    repository = module.get<Repository<CurrentUtility>>(
-      getRepositoryToken(CurrentUtility),
-    );
+    repository = module.get<Repository<CurrentUtility>>(getRepositoryToken(CurrentUtility));
   });
 
   afterEach(() => {
@@ -50,7 +51,7 @@ describe('CurrentUtilityService', () => {
   describe('findAll', () => {
     it('should return an array of current utilities', async () => {
       const configs = [mockCurrentUtility];
-      mockRepository.find.mockResolvedValue(configs);
+      (mockRepository.find as jest.Mock).mockResolvedValue(configs);
 
       const result = await service.findAll();
 
@@ -61,7 +62,7 @@ describe('CurrentUtilityService', () => {
 
   describe('findOne', () => {
     it('should return a single current utility', async () => {
-      mockRepository.findOneBy.mockResolvedValue(mockCurrentUtility);
+      (mockRepository.findOneBy as jest.Mock).mockResolvedValue(mockCurrentUtility);
 
       const result = await service.findOne(1);
 
@@ -70,7 +71,7 @@ describe('CurrentUtilityService', () => {
     });
 
     it('should return null when config not found', async () => {
-      mockRepository.findOneBy.mockResolvedValue(null);
+      (mockRepository.findOneBy as jest.Mock).mockResolvedValue(null);
 
       const result = await service.findOne(999);
 
@@ -79,9 +80,35 @@ describe('CurrentUtilityService', () => {
     });
   });
 
+  describe('findCurrent', () => {
+    it('should return the latest current utility by type', async () => {
+      (mockRepository.findOne as jest.Mock).mockResolvedValue(mockCurrentUtility);
+
+      const result = await service.findCurrent('electricity');
+
+      expect(result).toEqual(mockCurrentUtility);
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        where: { type: 'electricity' },
+        order: { id: 'DESC' },
+      });
+    });
+
+    it('should return null when no current utility found for type', async () => {
+      (mockRepository.findOne as jest.Mock).mockResolvedValue(null);
+
+      const result = await service.findCurrent('gas');
+
+      expect(result).toBeNull();
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        where: { type: 'gas' },
+        order: { id: 'DESC' },
+      });
+    });
+  });
+
   describe('remove', () => {
     it('should delete a current utility', async () => {
-      mockRepository.delete.mockResolvedValue({ affected: 1 });
+      (mockRepository.delete as jest.Mock).mockResolvedValue({ affected: 1 });
 
       await service.remove(1);
 
@@ -92,7 +119,7 @@ describe('CurrentUtilityService', () => {
 
   describe('add', () => {
     it('should create and return a new current utility', async () => {
-      mockRepository.save.mockResolvedValue(mockCurrentUtility);
+      (mockRepository.save as jest.Mock).mockResolvedValue(mockCurrentUtility);
 
       const result = await service.add(mockCurrentUtility);
 
