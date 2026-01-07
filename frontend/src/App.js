@@ -110,6 +110,10 @@ function App() {
       setErrorCurrentGas(null);
       const response = await fetch(`${API_HOST}/api/config/current/gas`);
       if (!response.ok) {
+        if (response.status === 404) {
+          setCurrentGas(null);
+          return null;
+        }
         throw new Error('Failed to fetch current gas config');
       }
       const data = await response.json();
@@ -131,6 +135,10 @@ function App() {
       setErrorCurrentElectric(null);
       const response = await fetch(`${API_HOST}/api/config/current/electric`);
       if (!response.ok) {
+        if (response.status === 404) {
+          setCurrentElectric(null);
+          return null;
+        }
         throw new Error('Failed to fetch current electric config');
       }
       const data = await response.json();
