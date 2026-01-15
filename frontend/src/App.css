@@ -327,12 +327,42 @@ button[type="submit"]:disabled {
   padding: 20px;
   border: 2px solid #e2e8f0;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .config-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
   border-color: #667eea;
+}
+
+.delete-config-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #fee;
+  color: #dc2626;
+  border: none;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  font-size: 12px;
+}
+
+.delete-config-btn:hover {
+  background: #dc2626;
+  color: white;
+  transform: scale(1.1);
+}
+
+.delete-config-btn:active {
+  transform: scale(0.95);
 }
 
 .config-header {

@@ -15,13 +15,14 @@ export class AppService {
     }
   }
 
-  createUtility(createPutlityDto: CreatePUtilityDto) {
-    let putlity = new PUtility();
+  async createUtility(createPutlityDto: CreatePUtilityDto) {
+    const putlity = new PUtility();
     putlity.name = createPutlityDto.name;
     putlity.rate = createPutlityDto.rate;
     putlity.type = createPutlityDto.type;
+    // eslint-disable-next-line no-useless-catch
     try {
-      this.putilityservice.add(putlity);
+      await this.putilityservice.add(putlity);
     } catch (e) {
       throw e;
     }
