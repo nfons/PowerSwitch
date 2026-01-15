@@ -27,3 +27,5 @@ We currently use nodemailer to send alerts via email. You will need to provide y
 checkout nodemailer documentation on the exact method [here](https://nodemailer.com/usage/using-gmail)
 - `GMAIL_USER`: The email address to send alerts to.
 - `GMAIL_PASS`: The password for the email account.
+
+***note:*** if you are using a gmail account that requires 2FA, you will need to generate an app password [here](https://support.google.com/accounts/answer/185833?hl=en) Recommended you create a new gmail account specifically for this purpose. to keep your account secure.
