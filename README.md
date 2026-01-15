@@ -82,7 +82,7 @@ npm run build && npm run start:prod
 ```
 
 ## Development
-Refer to the [Development Guide](DEVELOPMENT.md) for more information.
+Refer to the [Development Guide](DOCUMENTATION.md) for more information.
 ### API docs (Swagger)
 
 The API is documented using Swagger (OpenAPI).
