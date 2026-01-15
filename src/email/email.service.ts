@@ -12,7 +12,7 @@ export class EmailService {
     const pass = this.configService.get<string>('GMAIL_PASS');
 
     if (!user || !pass) {
-      this.logger.error('GMAIL_USER or GMAIL_PASS not set; EmailService will be disabled.');
+      this.logger.warn('GMAIL_USER or GMAIL_PASS not set; EmailService will be disabled.');
       return;
     }
 

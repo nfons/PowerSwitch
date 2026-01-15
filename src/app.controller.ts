@@ -41,7 +41,7 @@ export class AppController {
   @Put('/putlity')
   async createPutlity(@Body() createPutlityDto: CreatePUtilityDto) {
     try {
-      return this.appService.createUtility(createPutlityDto);
+      return await this.appService.createUtility(createPutlityDto);
     } catch (e) {
       this.logger.error(e);
     }
@@ -210,6 +210,26 @@ export class AppController {
     } catch (e) {
       this.logger.error(e);
       throw e;
+    }
+  }
+
+  @ApiOperation({ summary: 'Delete Current Utility configuration' })
+  @ApiParam({
+    name: 'id',
+    description: 'Configuration ID',
+    type: Number,
+    example: 1,
+  })
+  @ApiResponse({ status: 200, description: 'Configuration deleted successfully.' })
+  @Delete('/config/:id')
+  async deleteConfig(@Param('id', ParseIntPipe) id: number) {
+    try {
+      return await this.utilityService.remove(id);
+    } catch (e) {
+      this.logger.error(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        `Error deleting configuration record with ID ${id}: ${e.message}`,
+      );
     }
   }
 }

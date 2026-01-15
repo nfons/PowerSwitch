@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFireFlameSimple, faBoltLightning, faPlus, faTimes, faTowerCell, faCircleXmark, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import { faFireFlameSimple, faBoltLightning, faPlus, faTimes, faTowerCell, faCircleXmark, faCircleCheck, faTrash } from '@fortawesome/free-solid-svg-icons';
 import './App.css';
 
 const initialFormState = {
@@ -43,6 +43,10 @@ function App() {
 
   // store selected utility
   const [selectedUtility, setSelectedUtility] = useState(null);
+
+  // Delete confirmation modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [utilityToDelete, setUtilityToDelete] = useState(null);
 
   const handleChange = (field) => (event) => {
     setForm((prev) => ({
@@ -238,6 +242,39 @@ function App() {
     }
   }
 
+  const handleDeleteClick = (utility, event) => {
+    event.stopPropagation();
+    setUtilityToDelete(utility);
+    setShowDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setUtilityToDelete(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!utilityToDelete) return;
+
+    try {
+      const response = await fetch(`${API_HOST}/api/config/${utilityToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete utility configuration');
+      }
+
+      // Reload current configs after successful delete
+      fetchCurrentGas();
+      fetchCurrentElectric();
+    } catch (error) {
+      console.error('Error deleting utility configuration:', error);
+    } finally {
+      closeDeleteModal();
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault(); //blcok basic js
 
@@ -400,6 +437,13 @@ function App() {
                 <div className="empty-state">No gas configuration saved yet. Add one using the button above!</div>
               ) : (
                 <div className="config-card">
+                  <button
+                    className="delete-config-btn"
+                    onClick={(e) => handleDeleteClick(currentGas, e)}
+                    aria-label="Delete gas configuration"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
                   <div className="config-header">
                     <h4>{currentGas.name}</h4>
                     <span className="config-type gas">
@@ -443,6 +487,13 @@ function App() {
                 <div className="empty-state">No electric configuration saved yet. Add one using the button above!</div>
               ) : (
                 <div className="config-card">
+                  <button
+                    className="delete-config-btn"
+                    onClick={(e) => handleDeleteClick(currentElectric, e)}
+                    aria-label="Delete electric configuration"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
                   <div className="config-header">
                     <h4>{currentElectric.name}</h4>
                     <span className="config-type electric">
@@ -476,6 +527,31 @@ function App() {
         </section>
       </div>
 
+      {showDeleteModal && (
+        <div className="modal-overlay" onClick={closeDeleteModal}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Delete Utility Configuration?</h2>
+              <button className="modal-close" onClick={closeDeleteModal}>
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <p className="modal-description">
+              Are you sure you want to delete {utilityToDelete?.name}? This action cannot be undone.
+            </p>
+            <div className="confirm-actions">
+              <button type="button" className="confirm-btn cancel" onClick={closeDeleteModal}>
+                <FontAwesomeIcon icon={faCircleXmark} />
+                <span>Cancel</span>
+              </button>
+              <button type="button" className="confirm-btn confirm" onClick={confirmDelete}>
+                <FontAwesomeIcon icon={faTrash} />
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showConfirmModal && (
         <div className="modal-overlay" onClick={closeConfirmModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>

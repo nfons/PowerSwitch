@@ -141,5 +141,23 @@ describe('AppController (e2e)', () => {
       const res = await request(app.getHttpServer()).get('/config/current/gas').expect(404);
       expect(res.body).toMatchObject({ statusCode: 404, error: 'Not Found' });
     });
+
+    it('/config/:id (DELETE) should delete an existing config', async () => {
+      const target = seededConfigs[0];
+      await request(app.getHttpServer()).delete(`/config/${target.id}`).expect(200);
+
+      // Verify the config was deleted
+      const deleted = await utilityConfigService.findOne(target.id);
+      expect(deleted).toBeNull();
+    });
+
+    it('/config/:id (DELETE) should handle deleting non-existent config', async () => {
+      const nonExistentId = 99999;
+      await request(app.getHttpServer()).delete(`/config/${nonExistentId}`).expect(200);
+    });
+
+    it('/config/:id (DELETE) should handle invalid id format', async () => {
+      await request(app.getHttpServer()).delete('/config/invalid').expect(400);
+    });
   });
 });
