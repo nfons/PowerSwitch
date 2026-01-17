@@ -47,8 +47,7 @@ spec:
                 name: powerswitch-config
           volumeMounts:
             - name: powertable-storage
-              mountPath: /app/powertable.db
-              subPath: powertable.db
+              mountPath: /app
       volumes:
         - name: powertable-storage
           persistentVolumeClaim:
