@@ -239,7 +239,10 @@ export class TasksService {
   private async fetchWeb(type: string) {
     this.logger.debug('Fetching utility rates from web API for type:' + type);
     // 1. Launch Browser
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
     const page = await browser.newPage();
 
     // 2 Navigate to URL
