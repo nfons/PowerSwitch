@@ -901,7 +901,7 @@ describe('TasksService', () => {
 
       await service['fetchWeb']('gas');
 
-      expect(mockPuppeteer.launch).toHaveBeenCalledWith({ headless: true });
+      expect(mockPuppeteer.launch).toHaveBeenCalledWith({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     });
 
     it('should navigate to gas URL when type is gas', async () => {
