@@ -56,6 +56,7 @@ RUN apt-get update && apt-get install -y \
 # Tell Puppeteer to use the installed Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV PUPPETEER_DISABLE_DEV_SHM_USAGE=true
 
 COPY --from=build-svc /app/dist /app/dist
 COPY --from=build-frontend /app/frontend/build /app/frontend/build
