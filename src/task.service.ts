@@ -247,7 +247,7 @@ export class TasksService {
 
     // 2 Navigate to URL
     let url = type === 'gas' ? this.configService.get('GAS_URL') : this.configService.get('ELECTRIC_URL');
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    await page.goto(url);
 
     // 3 Fetch the raw HTML string (Requested Method)
     const html = await page.content();
