@@ -230,6 +230,7 @@ export class TasksService {
     }
   }
 
+
   /**
    * Fetches utility rate data from a Web browser based on the specified type.
    *
@@ -238,18 +239,27 @@ export class TasksService {
    */
   private async fetchWeb(type: string) {
     this.logger.debug('Fetching utility rates from web API for type:' + type);
+
+    // local function. Due to K8s issues
+    // https://stackoverflow.com/questions/78232323/puppeteer-on-kubernetes-throws-errors-navigation-frame-was-detached-request
+    function delay(time) {
+      return new Promise((resolve) => setTimeout(resolve, time));
+    }
     // 1. Launch Browser
     const browser = await puppeteer.launch({
       headless: true,
       dumpio: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
     });
+    await delay(1000);
     const page = await browser.newPage();
-
+    await delay(1000);
     // 2 Navigate to URL
     let url = type === 'gas' ? this.configService.get('GAS_URL') : this.configService.get('ELECTRIC_URL');
-    await page.goto(url);
-
+    await page.goto(url, {
+      waitUntil: ['domcontentloaded', 'networkidle2'],
+    });
+    await delay(1000);
     // 3 Fetch the raw HTML string (Requested Method)
     const html = await page.content();
 
