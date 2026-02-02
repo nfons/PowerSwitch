@@ -19,8 +19,18 @@ FROM base
 
 # Install Chromium and dependencies for Puppeteer
 RUN apt-get update && apt-get install -y \
-    chromium \
-    --no-install-recommends \
+        chromium \
+        libappindicator3-1 \
+        libatk-bridge2.0-0 \
+        libatk1.0-0 \
+        libcups2 \
+        libdbus-glib-1-2 \
+        libgbm1 \
+        libnss3 \
+        lsb-release \
+        xdg-utils \
+        wget \
+        --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
