@@ -903,7 +903,6 @@ describe('TasksService', () => {
 
       expect(mockPuppeteer.launch).toHaveBeenCalledWith({
         headless: true,
-        dumpio: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
       });
     });
@@ -922,7 +921,9 @@ describe('TasksService', () => {
 
       await service['fetchWeb']('gas');
 
-      expect(mockPage.goto).toHaveBeenCalledWith(gasWebUrl);
+      expect(mockPage.goto).toHaveBeenCalledWith(gasWebUrl, {
+        waitUntil: ['domcontentloaded', 'networkidle2'],
+      });
     });
 
     it('should navigate to electric URL when type is electric', async () => {
@@ -939,7 +940,9 @@ describe('TasksService', () => {
 
       await service['fetchWeb']('electric');
 
-      expect(mockPage.goto).toHaveBeenCalledWith(electricWebUrl);
+      expect(mockPage.goto).toHaveBeenCalledWith(electricWebUrl, {
+        waitUntil: ['domcontentloaded', 'networkidle2'],
+      });
     });
 
     it('should fetch and parse HTML content', async () => {

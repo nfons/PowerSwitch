@@ -9,7 +9,6 @@ import * as cheerio from 'cheerio';
 import { PutlityService } from './entities/putility/putlity.service';
 import { PUtility } from './entities/putility/putility.entity';
 import { CurrentUtilityService } from './entities/current_utility/current-utility.service';
-import { CurrentUtility } from './entities/current_utility/currentUtility.entity';
 import { EmailService } from './email/email.service';
 
 @Injectable()
@@ -287,8 +286,9 @@ export class TasksService {
     const emailbody = `<h1>New best ${type} rate found</h1><h3>Supplier:</h3><strong>${utility.name}</strong> at ${utility.rate} ${rateprefix}, check out details <a href="${utility.url}">@ ${utility.url}</a>`;
     const emailTitle = `New Best ${type.toUpperCase()} Rate Alert from your PowerSwitch Instance`;
     this.logger.debug('Sending email alert for new best ' + type + ' rate: ' + utility.name + ' at rate ' + utility.rate);
+    const toEmail = this.configService.get<string>('TO_EMAIL') || this.configService.get<string>('GMAIL_USER') || '';
     this.emailService.sendMail({
-      to: this.configService.get<string>('GMAIL_USER') || '',
+      to: toEmail,
       subject: emailTitle,
       html: emailbody,
     });

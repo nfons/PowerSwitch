@@ -69,6 +69,7 @@ GAS_URL='someurl.com'
 # optional
 GMAIL_USER=you@gmail.com
 GMAIL_PASS=yourAPP password
+TO_EMAIL=recipient@example.com #if you want to send it to a different email
 ```
 
 **Run the application:**
