@@ -1,5 +1,6 @@
 # PowerSwitch
 [![Build and publish image](https://github.com/nfons/PowerSwitch/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/nfons/PowerSwitch/actions/workflows/docker-publish.yml)  ![GitHub Release](https://img.shields.io/github/v/release/nfons/PowerSwitch)
+
 A NestJS-based application for managing and automating Utility Provider switching with a built-in web interface.
 
 ### Why?
