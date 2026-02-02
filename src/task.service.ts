@@ -9,7 +9,6 @@ import * as cheerio from 'cheerio';
 import { PutlityService } from './entities/putility/putlity.service';
 import { PUtility } from './entities/putility/putility.entity';
 import { CurrentUtilityService } from './entities/current_utility/current-utility.service';
-import { CurrentUtility } from './entities/current_utility/currentUtility.entity';
 import { EmailService } from './email/email.service';
 
 @Injectable()
@@ -230,6 +229,7 @@ export class TasksService {
     }
   }
 
+
   /**
    * Fetches utility rate data from a Web browser based on the specified type.
    *
@@ -238,16 +238,19 @@ export class TasksService {
    */
   private async fetchWeb(type: string) {
     this.logger.debug('Fetching utility rates from web API for type:' + type);
+
     // 1. Launch Browser
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
     });
-    const page = await browser.newPage();
 
+    const page = await browser.newPage();
     // 2 Navigate to URL
     let url = type === 'gas' ? this.configService.get('GAS_URL') : this.configService.get('ELECTRIC_URL');
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    await page.goto(url, {
+      waitUntil: ['domcontentloaded', 'networkidle2'],
+    });
 
     // 3 Fetch the raw HTML string (Requested Method)
     const html = await page.content();
@@ -283,8 +286,9 @@ export class TasksService {
     const emailbody = `<h1>New best ${type} rate found</h1><h3>Supplier:</h3><strong>${utility.name}</strong> at ${utility.rate} ${rateprefix}, check out details <a href="${utility.url}">@ ${utility.url}</a>`;
     const emailTitle = `New Best ${type.toUpperCase()} Rate Alert from your PowerSwitch Instance`;
     this.logger.debug('Sending email alert for new best ' + type + ' rate: ' + utility.name + ' at rate ' + utility.rate);
+    const toEmail = this.configService.get<string>('TO_EMAIL') || this.configService.get<string>('GMAIL_USER') || '';
     this.emailService.sendMail({
-      to: this.configService.get<string>('GMAIL_USER') || '',
+      to: toEmail,
       subject: emailTitle,
       html: emailbody,
     });
