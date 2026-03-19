@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFireFlameSimple, faBoltLightning, faPlus, faTimes, faTowerCell, faCircleXmark, faCircleCheck, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faFireFlameSimple, faBoltLightning, faPlus, faTimes, faTowerCell, faCircleXmark, faCircleCheck, faTrash, faSync } from '@fortawesome/free-solid-svg-icons';
 import './App.css';
 
 const initialFormState = {
@@ -47,6 +47,9 @@ function App() {
   // Delete confirmation modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [utilityToDelete, setUtilityToDelete] = useState(null);
+
+  // Refresh rates state
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleChange = (field) => (event) => {
     setForm((prev) => ({
@@ -275,6 +278,34 @@ function App() {
     }
   };
 
+  const handleRefreshRates = async () => {
+    try {
+      setIsRefreshing(true);
+      const response = await fetch(`${API_HOST}/api/refresh-rates`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to refresh utility rates');
+      }
+
+      // Refresh all data after successful rate refresh
+      const results = await Promise.all([
+        fetchBestGas(),
+        fetchBestElectric(),
+        fetchCurrentGas(),
+        fetchCurrentElectric(),
+      ]);
+
+      const [bestGasData, bestElectricData, currentGasData, currentElectricData] = results;
+      calculateBestRate(bestGasData, bestElectricData, currentGasData, currentElectricData);
+    } catch (error) {
+      console.error('Error refreshing utility rates:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault(); //blcok basic js
 
@@ -395,10 +426,20 @@ function App() {
       <div className="app-container">
         <div className="header-section">
           <h1><FontAwesomeIcon icon={faTowerCell} /> Power Switch </h1>
-          <button className="add-utility-button" onClick={() => setShowModal(true)}>
-            <FontAwesomeIcon icon={faPlus} />
-            <span>Add Current Utility</span>
-          </button>
+          <div className="header-buttons">
+            <button
+              className="refresh-rates-button"
+              onClick={handleRefreshRates}
+              disabled={isRefreshing}
+            >
+              <FontAwesomeIcon icon={faSync} spin={isRefreshing} />
+              <span>{isRefreshing ? 'Refreshing...' : 'Refresh Rates'}</span>
+            </button>
+            <button className="add-utility-button" onClick={() => setShowModal(true)}>
+              <FontAwesomeIcon icon={faPlus} />
+              <span>Add Current Utility</span>
+            </button>
+          </div>
         </div>
 
         <section className="best-rates-section">

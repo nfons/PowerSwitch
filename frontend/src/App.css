@@ -1,6 +1,6 @@
 .App {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
   padding: 40px 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
@@ -15,11 +15,12 @@
 }
 
 .form-card {
-  background: white;
+  background: #1e2433;
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   padding: 40px;
   animation: slideUp 0.4s ease-out;
+  border: 1px solid #2d3748;
 }
 
 @keyframes slideUp {
@@ -37,24 +38,24 @@
   margin: 0 0 12px 0;
   font-size: 28px;
   font-weight: 700;
-  color: #1a202c;
+  color: #f3f4f6;
   text-align: center;
 }
 
 .form-card > p {
   margin: 0 0 32px 0;
   font-size: 14px;
-  color: #718096;
+  color: #9ca3af;
   text-align: center;
   line-height: 1.6;
 }
 
 .form-card > p code {
-  background: #f7fafc;
+  background: #2d3748;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 13px;
-  color: #667eea;
+  color: #60a5fa;
   font-family: 'Courier New', monospace;
 }
 
@@ -70,7 +71,7 @@ label {
   gap: 8px;
   font-size: 14px;
   font-weight: 600;
-  color: #2d3748;
+  color: #e5e7eb;
   text-align: left;
 }
 
@@ -97,22 +98,22 @@ label {
   justify-content: center;
   gap: 6px;
   padding: 12px 12px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #374151;
   border-radius: 10px;
-  background-color: white;
+  background-color: #252d3d;
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 14px;
   font-weight: 600;
-  color: #2d3748;
+  color: #e5e7eb;
   font-family: inherit;
 }
 
 .type-button:hover:not(:disabled) {
-  border-color: #667eea;
-  background-color: #f7fafc;
+  border-color: #60a5fa;
+  background-color: #2d3748;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
 }
 
 .type-button:active:not(:disabled) {
@@ -120,10 +121,10 @@ label {
 }
 
 .type-button.active {
-  border-color: #667eea;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #60a5fa;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
 }
 
 .type-button:disabled {
@@ -143,34 +144,35 @@ input,
 select,
 textarea {
   padding: 12px 16px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #374151;
   border-radius: 8px;
   font-size: 15px;
   transition: all 0.2s ease;
   outline: none;
   font-family: inherit;
-  background-color: white;
+  background-color: #252d3d;
+  color: #e5e7eb;
 }
 
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
 }
 
 input:disabled,
 select:disabled,
 textarea:disabled {
-  background-color: #f7fafc;
+  background-color: #1e2433;
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 select {
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232d3748' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23e5e7eb' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 16px center;
   padding-right: 40px;
@@ -196,7 +198,7 @@ textarea {
   left: 16px;
   font-size: 15px;
   font-weight: 600;
-  color: #667eea;
+  color: #60a5fa;
   pointer-events: none;
   z-index: 1;
 }
@@ -208,7 +210,7 @@ textarea {
 button[type="submit"] {
   margin-top: 8px;
   padding: 14px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -216,12 +218,12 @@ button[type="submit"] {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
 }
 
 button[type="submit"]:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
 }
 
 button[type="submit"]:active:not(:disabled) {
@@ -254,32 +256,33 @@ button[type="submit"]:disabled {
 }
 
 .status.success {
-  background: #f0fdf4;
-  color: #166534;
-  border: 1px solid #bbf7d0;
+  background: #1f3f2f;
+  color: #86efac;
+  border: 1px solid #166534;
 }
 
 .status.error {
-  background: #fef2f2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
+  background: #3f1f1f;
+  color: #fca5a5;
+  border: 1px solid #7f1d1d;
 }
 
 .configs-section {
-  background: white;
+  background: #1e2433;
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   padding: 40px;
   animation: slideUp 0.4s ease-out 0.2s backwards;
+  border: 1px solid #2d3748;
 }
 
 .configs-section h2 {
   margin: 0 0 24px 0;
   font-size: 24px;
   font-weight: 700;
-  color: black;
+  color: #f3f4f6;
   text-align: center;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 .configs-section .configs-grid {
@@ -295,7 +298,7 @@ button[type="submit"]:disabled {
   margin: 0 0 16px 0;
   font-size: 18px;
   font-weight: 700;
-  color: #1a202c;
+  color: #e5e7eb;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -305,14 +308,14 @@ button[type="submit"]:disabled {
 .empty-state {
   text-align: center;
   padding: 40px 20px;
-  color: #718096;
+  color: #9ca3af;
   font-size: 16px;
 }
 
 .empty-state {
-  background: #f7fafc;
+  background: #252d3d;
   border-radius: 12px;
-  border: 2px dashed #e2e8f0;
+  border: 2px dashed #374151;
 }
 
 .configs-grid {
@@ -322,27 +325,27 @@ button[type="submit"]:disabled {
 }
 
 .config-card {
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  background: linear-gradient(135deg, #252d3d 0%, #2d3748 100%);
   border-radius: 12px;
   padding: 20px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #374151;
   transition: all 0.3s ease;
   position: relative;
 }
 
 .config-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
-  border-color: #667eea;
+  box-shadow: 0 8px 20px rgba(96, 165, 250, 0.3);
+  border-color: #60a5fa;
 }
 
 .delete-config-btn {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: #fee;
-  color: #dc2626;
-  border: none;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 6px;
   width: 28px;
   height: 28px;
@@ -358,6 +361,7 @@ button[type="submit"]:disabled {
 .delete-config-btn:hover {
   background: #dc2626;
   color: white;
+  border-color: #dc2626;
   transform: scale(1.1);
 }
 
@@ -371,14 +375,14 @@ button[type="submit"]:disabled {
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid #374151;
 }
 
 .config-header h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #1a202c;
+  color: #f3f4f6;
 }
 
 .config-type {
@@ -391,13 +395,15 @@ button[type="submit"]:disabled {
 }
 
 .config-type.gas {
-  background: #fef3c7;
-  color: #92400e;
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .config-type.electric {
-  background: #dbeafe;
-  color: #1e40af;
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .config-details {
@@ -416,25 +422,25 @@ button[type="submit"]:disabled {
 .config-label {
   font-size: 13px;
   font-weight: 600;
-  color: #718096;
+  color: #9ca3af;
   flex-shrink: 0;
 }
 
 .config-value {
   font-size: 14px;
-  color: #2d3748;
+  color: #e5e7eb;
   text-align: right;
 }
 
 .config-value.rate {
   font-size: 20px;
   font-weight: 700;
-  color: #667eea;
+  color: #60a5fa;
 }
 
 .config-json {
-  background: #1a202c;
-  color: #a0aec0;
+  background: #0f1419;
+  color: #9ca3af;
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 12px;
@@ -471,29 +477,59 @@ button[type="submit"]:disabled {
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-.add-utility-button {
+.header-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.add-utility-button,
+.refresh-rates-button {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: white;
-  color: #667eea;
+  color: white;
   border: none;
   border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.add-utility-button {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
 }
 
 .add-utility-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
 }
 
 .add-utility-button:active {
   transform: translateY(0);
+}
+
+.refresh-rates-button {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
+}
+
+.refresh-rates-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+}
+
+.refresh-rates-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.refresh-rates-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Best rates section */
@@ -509,18 +545,19 @@ button[type="submit"]:disabled {
 }
 
 .rate-card-wrapper {
-  background: white;
+  background: #1e2433;
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   padding: 30px;
   animation: slideUp 0.4s ease-out;
+  border: 1px solid #2d3748;
 }
 
 .rate-card-wrapper h2 {
   margin: 0 0 20px 0;
   font-size: 22px;
   font-weight: 700;
-  color: #1a202c;
+  color: #f3f4f6;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -540,23 +577,24 @@ button[type="submit"]:disabled {
 
 /* Utility cards */
 .utility-card {
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  background: linear-gradient(135deg, #252d3d 0%, #2d3748 100%);
   border-radius: 12px;
   padding: 20px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #374151;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .utility-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
-  border-color: #667eea;
+  box-shadow: 0 8px 20px rgba(96, 165, 250, 0.3);
+  border-color: #60a5fa;
 }
 
 .utility-card.best {
   position: relative;
-  border: 2px solid #2ecc71;
-  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
+  border: 2px solid #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
 }
 
 .best-indicator {
@@ -567,20 +605,21 @@ button[type="submit"]:disabled {
 }
 
 .best-badge {
-  background: #2ecc71;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #fff;
   font-size: 12px;
   font-weight: 600;
   padding: 4px 8px;
   border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
 }
 
 .utility-card .best-tooltip {
   position: absolute;
   top: 28px;
   right: 0;
-  background: #222;
-  color: #fff;
+  background: #0f1419;
+  color: #f3f4f6;
   font-size: 12px;
   padding: 6px 10px;
   border-radius: 6px;
@@ -590,6 +629,7 @@ button[type="submit"]:disabled {
   transition: opacity 0.15s ease, transform 0.15s ease;
   pointer-events: none;
   z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
 }
 
 .utility-card:hover .best-tooltip {
@@ -603,7 +643,7 @@ button[type="submit"]:disabled {
   gap: 12px;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid #374151;
 }
 
 .utility-icon {
@@ -622,7 +662,7 @@ button[type="submit"]:disabled {
   margin: 0;
   font-size: 20px;
   font-weight: 700;
-  color: #1a202c;
+  color: #f3f4f6;
 }
 
 .utility-details {
@@ -641,20 +681,20 @@ button[type="submit"]:disabled {
 .utility-label {
   font-size: 13px;
   font-weight: 600;
-  color: #718096;
+  color: #9ca3af;
   flex-shrink: 0;
 }
 
 .utility-value {
   font-size: 14px;
-  color: #2d3748;
+  color: #e5e7eb;
   text-align: right;
 }
 
 .utility-value.rate {
   font-size: 24px;
   font-weight: 700;
-  color: #667eea;
+  color: #60a5fa;
 }
 
 .utility-type {
@@ -667,34 +707,36 @@ button[type="submit"]:disabled {
 }
 
 .utility-type.gas {
-  background: #fef3c7;
-  color: #92400e;
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .utility-type.electric {
-  background: #dbeafe;
-  color: #1e40af;
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .utility-link {
-  color: #667eea;
+  color: #60a5fa;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.2s ease;
 }
 
 .utility-link:hover {
-  color: #764ba2;
+  color: #93c5fd;
   text-decoration: underline;
 }
 
 .error-state {
   text-align: center;
   padding: 20px;
-  color: #991b1b;
-  background: #fef2f2;
+  color: #fca5a5;
+  background: #3f1f1f;
   border-radius: 8px;
-  border: 1px solid #fecaca;
+  border: 1px solid #7f1d1d;
 }
 
 /* Modal styles */
@@ -704,19 +746,20 @@ button[type="submit"]:disabled {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 20px;
   animation: fadeIn 0.3s ease;
+  backdrop-filter: blur(4px);
 }
 
 .modal-content {
-  background: white;
+  background: #1e2433;
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
   padding: 40px;
   max-width: 500px;
   width: 100%;
@@ -724,6 +767,7 @@ button[type="submit"]:disabled {
   overflow-y: auto;
   animation: slideUp 0.3s ease-out;
   position: relative;
+  border: 1px solid #2d3748;
 }
 
 .modal-header {
@@ -737,12 +781,12 @@ button[type="submit"]:disabled {
   margin: 0;
   font-size: 24px;
   font-weight: 700;
-  color: #1a202c;
+  color: #f3f4f6;
 }
 
 .modal-description {
   font-size: 16px;
-  color: #4a5568;
+  color: #9ca3af;
   margin-bottom: 24px;
   line-height: 1.5;
 }
@@ -779,10 +823,10 @@ button[type="submit"]:disabled {
 }
 
 .confirm-btn.cancel {
-  background: #f7fafc;
-  color: #2d3748;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 6px 18px rgba(66, 75, 93, 0.15);
+  background: #252d3d;
+  color: #e5e7eb;
+  border: 2px solid #374151;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
 }
 
 .confirm-btn:hover:not(:disabled) {
@@ -804,7 +848,7 @@ button[type="submit"]:disabled {
   background: none;
   border: none;
   font-size: 24px;
-  color: #718096;
+  color: #9ca3af;
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -814,8 +858,8 @@ button[type="submit"]:disabled {
   border-radius: 4px;
 }
 .modal-close:hover {
-  background: #f7fafc;
-  color: #1a202c;
+  background: #2d3748;
+  color: #f3f4f6;
 }
 
 @media (max-width: 768px) {
@@ -840,6 +884,17 @@ button[type="submit"]:disabled {
   .header-section h1 {
     font-size: 28px;
     text-align: center;
+  }
+
+  .header-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .add-utility-button,
+  .refresh-rates-button {
+    width: 100%;
+    justify-content: center;
   }
 }
 
