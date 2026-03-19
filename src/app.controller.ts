@@ -9,6 +9,7 @@ import { CurrentUtility } from './entities/current_utility/currentUtility.entity
 import { CreateCurrentUtilityDto } from './dto/currentUtility.dto';
 import { ConfigService } from '@nestjs/config';
 import { utilityType } from './entities/utlityType.enum';
+import { TasksService } from './task.service';
 
 @ApiTags('Local App')
 @Controller()
@@ -20,6 +21,7 @@ export class AppController {
     private readonly putlityService: PutlityService,
     private readonly utilityService: CurrentUtilityService,
     private readonly configService: ConfigService,
+    private readonly tasksService: TasksService,
   ) {}
 
   @ApiOperation({ summary: 'Health Check Endpoint' })
@@ -230,6 +232,20 @@ export class AppController {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         `Error deleting configuration record with ID ${id}: ${e.message}`,
       );
+    }
+  }
+
+  @ApiOperation({ summary: 'Trigger utility rates refresh' })
+  @ApiResponse({ status: 200, description: 'Utility rates refresh triggered successfully.' })
+  @Post('/refresh-rates')
+  async refreshUtilityRates() {
+    try {
+      this.logger.log('Manual utility rates refresh triggered');
+      await this.tasksService.getUtilityRates();
+      return { success: true, message: 'Utility rates refresh completed successfully' };
+    } catch (e) {
+      this.logger.error('Error refreshing utility rates:', e);
+      throw e;
     }
   }
 }
