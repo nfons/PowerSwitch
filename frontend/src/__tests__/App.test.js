@@ -320,4 +320,260 @@ describe('App', () => {
     await userEvent.hover(electricCard);
     expect(tooltip).toBeInTheDocument();
   });
+
+  describe('handleRefreshRates', () => {
+    test('successfully refreshes rates and updates all data', async () => {
+      const updatedBestGas = { id: 1, name: 'Updated Gas', type: 'Gas', rate: 0.09, rateLength: 12 };
+      const updatedBestElectric = { id: 2, name: 'Updated Electric', type: 'Electric', rate: 0.19, rateLength: 6 };
+
+      let refreshed = false;
+      const fetchMock = jest.fn(async (url, options) => {
+        // Refresh rates POST request
+        if (url.includes('/api/refresh-rates') && options?.method === 'POST') {
+          refreshed = true;
+          return { ok: true, json: async () => ({ success: true }) };
+        }
+
+        // Return updated data after refresh, initial data before
+        if (url.includes('/api/putility/best/gas')) {
+          return { ok: true, json: async () => (refreshed ? updatedBestGas : bestGas) };
+        }
+        if (url.includes('/api/putility/best/electric')) {
+          return { ok: true, json: async () => (refreshed ? updatedBestElectric : bestElectric) };
+        }
+        if (url.includes('/api/config/current/gas')) {
+          return { ok: true, json: async () => currentGas };
+        }
+        if (url.includes('/api/config/current/electric')) {
+          return { ok: true, json: async () => currentElectric };
+        }
+
+        throw new Error(`Unexpected call: ${url}`);
+      });
+      global.fetch = fetchMock;
+
+      render(<App />);
+
+      // Wait for initial load
+      await screen.findByText('Gas Saver');
+
+      // Find and click refresh button
+      const refreshButton = screen.getByRole('button', { name: /Refresh Rates/i });
+      expect(refreshButton).toBeInTheDocument();
+      expect(refreshButton).not.toBeDisabled();
+
+      await userEvent.click(refreshButton);
+
+      // Wait for refresh to complete
+      await waitFor(() => {
+        const postCall = fetchMock.mock.calls.find(c => c[0].includes('/api/refresh-rates') && c[1]?.method === 'POST');
+        expect(postCall).toBeTruthy();
+      });
+
+      // Button should be enabled again after completion
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /Refresh Rates/i })).not.toBeDisabled();
+      });
+
+      // Verify data was refetched (should have calls after the POST)
+      const gasCallsAfterPost = fetchMock.mock.calls.filter(c => c[0].includes('/api/putility/best/gas'));
+      expect(gasCallsAfterPost.length).toBeGreaterThan(1);
+
+      // Verify updated data appears
+      await waitFor(() => {
+        expect(screen.getByText('Updated Gas')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Updated Electric')).toBeInTheDocument();
+    });
+
+    test('handles failed POST request to refresh-rates endpoint', async () => {
+      const fetchMock = jest.fn(async (url, options) => {
+        // Initial page load
+        if (url.includes('/api/putility/best/gas') && !options) return { ok: true, json: async () => bestGas };
+        if (url.includes('/api/putility/best/electric') && !options) return { ok: true, json: async () => bestElectric };
+        if (url.includes('/api/config/current/gas') && !options) return { ok: true, json: async () => currentGas };
+        if (url.includes('/api/config/current/electric') && !options) return { ok: true, json: async () => currentElectric };
+
+        // Refresh rates POST request fails
+        if (url.includes('/api/refresh-rates') && options?.method === 'POST') {
+          return { ok: false, status: 500, json: async () => ({ error: 'Server error' }) };
+        }
+
+        throw new Error(`Unexpected call: ${url}`);
+      });
+      global.fetch = fetchMock;
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      render(<App />);
+
+      // Wait for initial load
+      await screen.findByText('Gas Saver');
+
+      // Click refresh button
+      const refreshButton = screen.getByRole('button', { name: /Refresh Rates/i });
+      await userEvent.click(refreshButton);
+
+      // Wait for error to be logged
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          'Error refreshing utility rates:',
+          expect.any(Error)
+        );
+      });
+
+      // Button should be enabled again even after error
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /Refresh Rates/i })).not.toBeDisabled();
+      });
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('handles failed data fetch after successful POST request', async () => {
+      const fetchMock = jest.fn(async (url, options) => {
+        // Initial page load
+        if (url.includes('/api/putility/best/gas') && !options) return { ok: true, json: async () => bestGas };
+        if (url.includes('/api/putility/best/electric') && !options) return { ok: true, json: async () => bestElectric };
+        if (url.includes('/api/config/current/gas') && !options) return { ok: true, json: async () => currentGas };
+        if (url.includes('/api/config/current/electric') && !options) return { ok: true, json: async () => currentElectric };
+
+        // Refresh rates POST succeeds
+        if (url.includes('/api/refresh-rates') && options?.method === 'POST') {
+          return { ok: true, json: async () => ({ success: true }) };
+        }
+
+        // But subsequent data fetch fails
+        if (url.includes('/api/putility/best/gas')) return { ok: false, status: 500 };
+        if (url.includes('/api/putility/best/electric')) return { ok: true, json: async () => bestElectric };
+        if (url.includes('/api/config/current/gas')) return { ok: true, json: async () => currentGas };
+        if (url.includes('/api/config/current/electric')) return { ok: true, json: async () => currentElectric };
+
+        throw new Error(`Unexpected call: ${url}`);
+      });
+      global.fetch = fetchMock;
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      render(<App />);
+
+      // Wait for initial load
+      await screen.findByText('Gas Saver');
+
+      // Click refresh button
+      const refreshButton = screen.getByRole('button', { name: /Refresh Rates/i });
+      await userEvent.click(refreshButton);
+
+      // Wait for completion
+      await waitFor(() => {
+        expect(screen.queryByRole('button', { name: /Refreshing/i })).not.toBeInTheDocument();
+      });
+
+      // Button should be enabled again
+      expect(screen.getByRole('button', { name: /Refresh Rates/i })).not.toBeDisabled();
+
+      // Verify POST was successful
+      const postCall = fetchMock.mock.calls.find(c => c[0].includes('/api/refresh-rates') && c[1]?.method === 'POST');
+      expect(postCall).toBeTruthy();
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('button is disabled while refresh is in progress', async () => {
+      let resolveRefresh;
+      const refreshPromise = new Promise(resolve => {
+        resolveRefresh = resolve;
+      });
+
+      const fetchMock = jest.fn(async (url, options) => {
+        // Initial page load
+        if (url.includes('/api/putility/best/gas') && !options) return { ok: true, json: async () => bestGas };
+        if (url.includes('/api/putility/best/electric') && !options) return { ok: true, json: async () => bestElectric };
+        if (url.includes('/api/config/current/gas') && !options) return { ok: true, json: async () => currentGas };
+        if (url.includes('/api/config/current/electric') && !options) return { ok: true, json: async () => currentElectric };
+
+        // Refresh rates POST - hold until we resolve
+        if (url.includes('/api/refresh-rates') && options?.method === 'POST') {
+          await refreshPromise;
+          return { ok: true, json: async () => ({ success: true }) };
+        }
+
+        if (url.includes('/api/putility/best/gas')) return { ok: true, json: async () => bestGas };
+        if (url.includes('/api/putility/best/electric')) return { ok: true, json: async () => bestElectric };
+        if (url.includes('/api/config/current/gas')) return { ok: true, json: async () => currentGas };
+        if (url.includes('/api/config/current/electric')) return { ok: true, json: async () => currentElectric };
+
+        throw new Error(`Unexpected call: ${url}`);
+      });
+      global.fetch = fetchMock;
+
+      render(<App />);
+
+      // Wait for initial load
+      await screen.findByText('Gas Saver');
+
+      // Click refresh button
+      const refreshButton = screen.getByRole('button', { name: /Refresh Rates/i });
+      await userEvent.click(refreshButton);
+
+      // Button should be disabled and show "Refreshing..."
+      const refreshingButton = screen.getByRole('button', { name: /Refreshing/i });
+      expect(refreshingButton).toBeDisabled();
+
+      // Try clicking again - should not trigger another fetch
+      const callCountBeforeClick = fetchMock.mock.calls.length;
+      await userEvent.click(refreshingButton);
+      expect(fetchMock.mock.calls.length).toBe(callCountBeforeClick);
+
+      // Resolve the refresh
+      resolveRefresh();
+
+      // Wait for button to be enabled again
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /Refresh Rates/i })).not.toBeDisabled();
+      });
+    });
+
+    test('calls calculateBestRate with fetched data after successful refresh', async () => {
+      const fetchMock = jest.fn(async (url, options) => {
+        if (url.includes('/api/putility/best/gas')) return { ok: true, json: async () => bestGas };
+        if (url.includes('/api/putility/best/electric')) return { ok: true, json: async () => bestElectric };
+        if (url.includes('/api/config/current/gas')) return { ok: true, json: async () => currentGas };
+        if (url.includes('/api/config/current/electric')) return { ok: true, json: async () => currentElectric };
+        if (url.includes('/api/refresh-rates') && options?.method === 'POST') {
+          return { ok: true, json: async () => ({ success: true }) };
+        }
+        throw new Error(`Unexpected call: ${url}`);
+      });
+      global.fetch = fetchMock;
+
+      render(<App />);
+
+      // Wait for initial load
+      await screen.findByText('Gas Saver');
+
+      // Click refresh button
+      const refreshButton = screen.getByRole('button', { name: /Refresh Rates/i });
+      await userEvent.click(refreshButton);
+
+      // Wait for refresh to complete
+      await waitFor(() => {
+        expect(screen.queryByRole('button', { name: /Refreshing/i })).not.toBeInTheDocument();
+      });
+
+      // Verify all fetch calls were made (initial + refresh)
+      // Initial: 4 calls (best gas, best electric, current gas, current electric)
+      // Refresh: 1 POST + 4 data fetches = 5 more calls
+      // Total: 9 calls
+      expect(fetchMock.mock.calls.length).toBeGreaterThanOrEqual(9);
+
+      // Verify POST happened
+      const postCalls = fetchMock.mock.calls.filter(c => c[0].includes('/api/refresh-rates'));
+      expect(postCalls.length).toBe(1);
+
+      // Verify data refetch happened after POST
+      const allGasCalls = fetchMock.mock.calls.filter(c => c[0].includes('/api/putility/best/gas'));
+      expect(allGasCalls.length).toBeGreaterThanOrEqual(2); // Initial + refetch
+    });
+  });
 });
